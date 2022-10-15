@@ -13,7 +13,7 @@ CREATE TABLE balance(
 );
 
 
-CREATE TABLE transfers(
+CREATE TABLE transfer(
    transfer_id NUMBER,
    transfer_label VARCHAR2(50),
    transfer_description CLOB,
