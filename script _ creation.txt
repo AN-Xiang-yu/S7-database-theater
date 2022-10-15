@@ -37,7 +37,8 @@ CREATE TABLE discount(
    discount_id NUMBER,
    discount_label VARCHAR2(50),
    discount_percentage NUMBER(2,2),
-   PRIMARY KEY(discount_id)
+   PRIMARY KEY(discount_id),
+   CHECK (discount_percentage BETWEEN 0 AND 1)
 );
 
 insert into discount values (1, 'kid', 0.50);
@@ -109,7 +110,8 @@ CREATE TABLE transfer(
    transfer_balance_at_time NUMBER(15,2),
    theater_id NUMBER(10) NOT NULL,
    PRIMARY KEY(transfer_id),
-   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (transfer_amount >= 0)
 );
  
 CREATE TABLE room(
@@ -118,7 +120,8 @@ CREATE TABLE room(
    room_capacity NUMBER(10),
    theater_id NUMBER(10) NOT NULL,
    PRIMARY KEY(room_id),
-   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (room_capacity >= 0)
 );
 
 insert into room values (1, 'Salle Alexandre Astier', 200, 1);
@@ -140,7 +143,9 @@ CREATE TABLE show(
    show_performing_costs NUMBER(15,2),
    theater_id NUMBER(10) NOT NULL,
    PRIMARY KEY(show_id),
-   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (show_fixed_costs >= 0),
+   CHECK (show_performing_costs >= 0)
 );
 
 
@@ -173,7 +178,9 @@ CREATE TABLE performance_schedule(
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(room_id) REFERENCES room(room_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
-   CHECK(performance_schedule_start_date <= performance_schedule_end_date)
+   CHECK(performance_schedule_start_date <= performance_schedule_end_date),
+   CHECK (performance_schedule_times >= 0),
+   CHECK (performance_schedule_transport_cost >= 0)
 );
 
 INSERT INTO performance_schedule values ( 1 ,TO_DATE('2011-09-12', 'YYYY-MM-DD'),TO_DATE('2011-09-16', 'YYYY-MM-DD'), 2 , 53.97 , 1 , 4 , 4 );
@@ -363,7 +370,7 @@ CREATE TABLE performance(
    performance_datetime TIMESTAMP,
    performance_description CLOB,
    PRIMARY KEY(performance_id),
-   FOREIGN KEYperformance_schedule_id REFERENCES performance_schedule(performance_schedule_id)
+   FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id)
 );
  
 CREATE TABLE ticket(
@@ -373,7 +380,8 @@ CREATE TABLE ticket(
    discount_id NUMBER(10),
    PRIMARY KEY(ticket_id),
    FOREIGN KEY(client_id) REFERENCES client(client_id),
-   FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
+   FOREIGN KEY(discount_id) REFERENCES discount(discount_id),
+   CHECK (ticket_price >= 0)
 );
  
 CREATE TABLE contract(
@@ -386,7 +394,8 @@ CREATE TABLE contract(
    PRIMARY KEY(theater_id, agency_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
    FOREIGN KEY(agency_id) REFERENCES agency(agency_id),
-   CHECK (contract_date_start <= contract_date_end)
+   CHECK (contract_date_start <= contract_date_end),
+   CHECK (contract_amount >= 0)
 );
  
 CREATE TABLE sells(
