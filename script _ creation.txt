@@ -1,79 +1,141 @@
+ 
+CREATE TABLE city(
+   city_id NUMBER,
+   city_name VARCHAR2(50),
+   PRIMARY KEY(city_id)
+);
+
+insert into city values (1, 'Juvisy-sur-Orge');
+insert into city values (2, 'Athis-Mons');
+insert into city values (3, 'Villejuif');
+insert into city values (4, 'Alfortville');
+insert into city values (5, 'Vitry-sur-Seine');
+insert into city values (6, 'Paris');
+insert into city values (7, 'Viry-Châtillon');
+insert into city values (8, 'Créteil');
+insert into city values (9, 'Yerres');
+insert into city values (10, 'Orly');
+
+
+ 
 CREATE TABLE agency(
    agency_id NUMBER,
-   agency_name VARCHAR2(50),
+   agency_name VARCHAR2(100),
    agency_address VARCHAR2(50),
    PRIMARY KEY(agency_id)
 );
 
-CREATE TABLE balance(
-   balance_id NUMBER,
-   balance_date TIMESTAMP(0) NOT NULL,
-   balance_amount NUMBER(15,2),
-   PRIMARY KEY(balance_id)
-);
+insert into agency values (1, 'Ville de Juvisy');
+insert into agency values (2, 'Mécène Jean Dupuit');
+insert into agency values (3, 'Municipalité de Villejuif');
+insert into agency values (4, 'Ministère de la Culture');
+insert into agency values (5, 'Ville de Paris');
+insert into agency values (6, 'Amicale des amateurs de théâtre');
+insert into agency values (7, 'Ville de Créteil');
+insert into agency values (8, 'Municipalité de Yerres');
+insert into agency values (9, 'Mécène Yvonne Lefèvre');
+insert into agency values (10, 'Ministère de l Univers');
 
-
-CREATE TABLE transfer(
-   transfer_id NUMBER,
-   transfer_label VARCHAR2(50),
-   transfer_description CLOB,
-   transfer_amount NUMBER(15,2),
-   transfer_datetime TIMESTAMP(0),
-   transfer_sender VARCHAR2(50),
-   transfer_receiver VARCHAR2(50),
-   transfer_balance_at_time NUMBER(15,2),
-   PRIMARY KEY(transfer_id)
-);
-
-
+ 
 CREATE TABLE performance(
    performance_id NUMBER,
    performance_description CLOB,
    PRIMARY KEY(performance_id)
 );
 
-
-CREATE TABLE ticket(
-   ticket_id NUMBER,
-   ticket_price NUMBER(15,2),
-   ticket_performance_datetime TIMESTAMP(0),
-   PRIMARY KEY(ticket_id)
-);
-
-
+ 
 CREATE TABLE discount(
    discount_id NUMBER,
    discount_label VARCHAR2(50),
    discount_percentage NUMBER(2,2),
-   ticket_id NUMBER(10),
-   PRIMARY KEY(discount_id),
-   FOREIGN KEY(ticket_id) REFERENCES ticket(ticket_id)
+   PRIMARY KEY(discount_id)
 );
 
+insert into discount values (1, 'kid', 50);
+insert into discount values (2, 'student', 25);
+insert into discount values (3, 'senior', 30);
+insert into discount values (4, 'christmas', 15);
+insert into discount values (5, 'easter', 15);
+insert into discount values (6, 'halloween', 20);
+insert into discount values (7, 'new_year', 10);
+insert into discount values (8, 'valentine', 15);
+insert into discount values (9, 'unemployed', 20);
+insert into discount values (10, 'asian_new_year', 15);
 
+ 
 CREATE TABLE client(
    client_id NUMBER,
    client_name VARCHAR2(50),
    client_birth_date DATE,
    client_type VARCHAR2(50),
-   ticket_id NUMBER(10) NOT NULL,
-   PRIMARY KEY(client_id),
-   FOREIGN KEY(ticket_id) REFERENCES ticket(ticket_id)
+   PRIMARY KEY(client_id)
 );
 
+ 
+CREATE TABLE theater(
+   theater_id NUMBER,
+   theater_name VARCHAR2(100),
+   theater_address VARCHAR2(50),
+   city_id NUMBER(10) NOT NULL,
+   PRIMARY KEY(theater_id),
+   FOREIGN KEY(city_id) REFERENCES city(city_id)
+);
 
+insert into theater (theater_id, theater_name, theater_address, theater_city_id)
+values (1, "L'Aristophane", "5 rue Jean-Jaurès", 1)
+
+ 
+CREATE TABLE balance(
+   balance_id NUMBER,
+   balance_date TIMESTAMP NOT NULL,
+   balance_amount NUMBER(15,2),
+   theater_id NUMBER(10) NOT NULL,
+   PRIMARY KEY(balance_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+);
+
+ 
+CREATE TABLE transfer(
+   transfer_id NUMBER,
+   transfer_label VARCHAR2(50),
+   transfer_description CLOB,
+   transfer_amount NUMBER(15,2),
+   transfer_datetime TIMESTAMP,
+   transfer_sender VARCHAR2(50),
+   transfer_receiver VARCHAR2(50),
+   transfer_balance_at_time NUMBER(15,2),
+   theater_id NUMBER(10) NOT NULL,
+   PRIMARY KEY(transfer_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+);
+
+ 
+CREATE TABLE room(
+   room_id NUMBER,
+   room_name VARCHAR2(100),
+   room_capacity NUMBER(10),
+   theater_id NUMBER(10) NOT NULL,
+   PRIMARY KEY(room_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+);
+
+ 
 CREATE TABLE performance_schedule(
    performance_schedule_id NUMBER,
-   performance_schedule_start_date TIMESTAMP(0),
-   performance_schedule_end_date TIMESTAMP(0),
+   performance_schedule_start_date TIMESTAMP,
+   performance_schedule_end_date TIMESTAMP,
    performance_schedule_times NUMBER(10),
    performance_schedule_transport_cost NUMBER(15,2),
    performance_id NUMBER(10) NOT NULL,
+   room_id NUMBER(10) NOT NULL,
+   theater_id NUMBER(10) NOT NULL,
    PRIMARY KEY(performance_schedule_id),
-   FOREIGN KEY(performance_id) REFERENCES performance(performance_id)
+   FOREIGN KEY(performance_id) REFERENCES performance(performance_id),
+   FOREIGN KEY(room_id) REFERENCES room(room_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
 );
 
-
+ 
 CREATE TABLE show(
    show_id NUMBER,
    show_name VARCHAR2(50),
@@ -81,60 +143,38 @@ CREATE TABLE show(
    show_fixed_costs NUMBER(15,2),
    show_performing_costs NUMBER(15,2),
    performance_schedule_id NUMBER(10) NOT NULL,
-   PRIMARY KEY(show_id),
-   FOREIGN KEY(performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id)
-);
-
-CREATE TABLE room(
-   room_id NUMBER,
-   room_name VARCHAR2(100),
-   room_capacity NUMBER(10),
-   performance_schedule_id NUMBER(10) NOT NULL,
-   PRIMARY KEY(room_id),
-   FOREIGN KEY(performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id)
-);
-
-
-CREATE TABLE theater(
-   theater_id NUMBER,
-   theater_name VARCHAR2(100),
-   theater_address VARCHAR2(50),
-   show_id NUMBER(10) NOT NULL,
-   performance_schedule_id NUMBER(10) NOT NULL,
-   room_id NUMBER(10) NOT NULL,
-   transfer_id NUMBER(10) NOT NULL,
-   balance_id NUMBER(10) NOT NULL,
-   PRIMARY KEY(theater_id),
-   FOREIGN KEY(show_id) REFERENCES show(show_id),
-   FOREIGN KEY(performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id),
-   FOREIGN KEY(room_id) REFERENCES room(room_id),
-   FOREIGN KEY(transfer_id) REFERENCES transfer(transfer_id),
-   FOREIGN KEY(balance_id) REFERENCES balance(balance_id)
-);
-
-
-CREATE TABLE city(
-   city_id NUMBER,
-   city_name VARCHAR2(50),
    theater_id NUMBER(10) NOT NULL,
-   PRIMARY KEY(city_id),
+   PRIMARY KEY(show_id),
+   FOREIGN KEY(performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
 );
 
+ 
+CREATE TABLE ticket(
+   ticket_id NUMBER,
+   ticket_price NUMBER(15,2),
+   ticket_performance_datetime TIMESTAMP,
+   client_id NUMBER(10) NOT NULL,
+   discount_id NUMBER(10),
+   PRIMARY KEY(ticket_id),
+   FOREIGN KEY(client_id) REFERENCES client(client_id),
+   FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
+);
 
+ 
 CREATE TABLE contract(
    theater_id NUMBER(10),
    agency_id NUMBER(10),
    contract_amount NUMBER(15,2),
-   contract_date_start TIMESTAMP(0),
-   contract_date_end TIMESTAMP(0),
+   contract_date_start TIMESTAMP,
+   contract_date_end TIMESTAMP,
    contract_regular VARCHAR2(50),
    PRIMARY KEY(theater_id, agency_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
    FOREIGN KEY(agency_id) REFERENCES agency(agency_id)
 );
 
-
+ 
 CREATE TABLE sells(
    performance_id NUMBER(10),
    ticket_id NUMBER(10),
@@ -143,7 +183,7 @@ CREATE TABLE sells(
    FOREIGN KEY(ticket_id) REFERENCES ticket(ticket_id)
 );
 
-
+ 
 CREATE TABLE belongs(
    show_id NUMBER(10),
    discount_id NUMBER(10),
