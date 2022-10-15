@@ -164,6 +164,22 @@ CREATE TABLE show(
    PRIMARY KEY(show_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
 );
+
+INSERT INTO show values ( 1 ,'show 1' ,'description of the show 1' , 553.12 , 415.12 , 2 );
+INSERT INTO show values ( 2 ,'show 2' ,'description of the show 2' , 1186.2 , 454.93 , 3 );
+INSERT INTO show values ( 3 ,'show 3' ,'description of the show 3' , 689.91 , 424.93 , 1 );
+INSERT INTO show values ( 4 ,'show 4' ,'description of the show 4' , 904.67 , 223.77 , 4 );
+INSERT INTO show values ( 5 ,'show 5' ,'description of the show 5' , 657.22 , 547.86 , 4 );
+INSERT INTO show values ( 6 ,'show 6' ,'description of the show 6' , 2850.57 , 796.53 , 3 );
+INSERT INTO show values ( 7 ,'show 7' ,'description of the show 7' , 1919.25 , 102.51 , 3 );
+INSERT INTO show values ( 8 ,'show 8' ,'description of the show 8' , 677.17 , 356.85 , 1 );
+INSERT INTO show values ( 9 ,'show 9' ,'description of the show 9' , 2044.01 , 5.7 , 1 );
+INSERT INTO show values ( 10 ,'show 10' ,'description of the show 10' , 1064.33 , 535.33 , 3 );
+INSERT INTO show values ( 11 ,'show 11' ,'description of the show 11' , 2298.26 , 575.24 , 1 );
+INSERT INTO show values ( 12 ,'show 12' ,'description of the show 12' , 2023.74 , 563.68 , 2 );
+INSERT INTO show values ( 13 ,'show 13' ,'description of the show 13' , 1623.05 , 422.86 , 4 );
+INSERT INTO show values ( 14 ,'show 14' ,'description of the show 14' , 1324.96 , 840.27 , 3 );
+INSERT INTO show values ( 15 ,'show 15' ,'description of the show 15' , 2718.13 , 897.89 , 2);
  
 CREATE TABLE ticket(
    ticket_id NUMBER,
