@@ -74,8 +74,15 @@ CREATE TABLE theater(
    FOREIGN KEY(city_id) REFERENCES city(city_id)
 );
 
-insert into theater (theater_id, theater_name, theater_address, theater_city_id)
-values (1, "L'Aristophane", "5 rue Jean-Jaurès", 1)
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (1, 'Theater 1', '5 rue Jean-Jaurès', 1);
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (2, 'Theater 2', '10 rue Mélisande', 2);
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (3, 'Theater 3', '15 rue Xiangyu', 3);
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (4, 'Theater 4', '20 rue Suhgita', 4);
+
  
 CREATE TABLE balance(
    balance_id NUMBER,
