@@ -138,20 +138,31 @@ insert into room values (8, 'Salle Alain Chabat', 130, 3);
 insert into room values (9, 'Salle Bruno Salomone', 145, 3);
 insert into room values (10, 'Salle Vanessa Guedj', 90, 3);
  
+
+
 CREATE TABLE performance_schedule(
    performance_schedule_id NUMBER,
-   performance_schedule_start_date TIMESTAMP,
-   performance_schedule_end_date TIMESTAMP,
+   performance_schedule_start_date DATE,
+   performance_schedule_end_date DATE,
    performance_schedule_times NUMBER(10),
    performance_schedule_transport_cost NUMBER(15,2),
-   performance_id NUMBER(10) NOT NULL,
    show_id NUMBER(10) NOT NULL,
    room_id NUMBER(10) NOT NULL,
    theater_id NUMBER(10) NOT NULL,
    PRIMARY KEY(performance_schedule_id),
-   FOREIGN KEY(performance_id) REFERENCES performance(performance_id),
    FOREIGN KEY(room_id) REFERENCES room(room_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+);
+
+INSERT INTO performance_schedule VALUES(1, TO_DATE('20220501 ', 'YYYYMMDD'), TO_DATE('20220503 ', 'YYYYMMDD'), 2, 100.5, 1, 1, 1);
+
+
+CREATE TABLE performance(
+   performance_id NUMBER,
+   performance_description CLOB,
+   performance_schedule_id NUMBER(10) NOT NULL,
+   PRIMARY KEY(performance_id),
+   FOREIGN KEYperformance_schedule_id REFERENCES performance_schedule(performance_schedule_id)
 );
  
 CREATE TABLE show(
