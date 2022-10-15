@@ -21,20 +21,20 @@ insert into city values (10, 'Orly');
 CREATE TABLE agency(
    agency_id NUMBER,
    agency_name VARCHAR2(100),
-   agency_address VARCHAR2(50),
+   agency_address VARCHAR2(100),
    PRIMARY KEY(agency_id)
 );
 
-insert into agency values (1, 'Ville de Juvisy');
-insert into agency values (2, 'Mécène Jean Dupuit');
-insert into agency values (3, 'Municipalité de Villejuif');
-insert into agency values (4, 'Ministère de la Culture');
-insert into agency values (5, 'Ville de Paris');
-insert into agency values (6, 'Amicale des amateurs de théâtre');
-insert into agency values (7, 'Ville de Créteil');
-insert into agency values (8, 'Municipalité de Yerres');
-insert into agency values (9, 'Mécène Yvonne Lefèvre');
-insert into agency values (10, 'Ministère de l Univers');
+insert into agency values (1, 'Ville de Juvisy', '5 rue des Pommes, 91260');
+insert into agency values (2, 'Mécène Jean Dupuit', '9 avenue du Poulain, 75001');
+insert into agency values (3, 'Municipalité de Villejuif', '4 boulevard Truc, 94800');
+insert into agency values (4, 'Ministère de la Culture', '28 chemin du Pain, 75000');
+insert into agency values (5, 'Ville de Paris', '35 rue Barbara Pravi, 75002');
+insert into agency values (6, 'Amicale des amateurs de théâtre', '54 rue des Chats, 91640');
+insert into agency values (7, 'Ville de Créteil', '2 boulevard des Poils, 94000');
+insert into agency values (8, 'Municipalité de Yerres', '65 avenue Chose, 91330');
+insert into agency values (9, 'Mécène Yvonne Lefèvre', '87 rue du Théâtre, 91260');
+insert into agency values (10, 'Ministère de l Univers', '56 boulevard de l Espace, 91640');
 
  
 CREATE TABLE performance(
