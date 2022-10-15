@@ -191,7 +191,7 @@ CREATE TABLE performance(
    performance_reference_price NUMBER, 
    PRIMARY KEY(performance_id),
    FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id),
-   CHECK performance_reference_price >= 0)
+   CHECK (performance_reference_price >= 0)
 );
 
 
@@ -223,7 +223,7 @@ CREATE TABLE contract(
  
 CREATE TABLE show_discount(
    show_id NUMBER NOT NULL,
-   discount_id NUMBER FOREIGN,
+   discount_id NUMBER NOT NULL,
    PRIMARY KEY(show_id, discount_id),
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
