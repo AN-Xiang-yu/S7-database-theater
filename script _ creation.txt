@@ -33,12 +33,6 @@ insert into agency values (8, 'Municipalité de Yerres', '65 avenue Chose, 91330
 insert into agency values (9, 'Mécène Yvonne Lefèvre', '87 rue du Théâtre, 91260');
 insert into agency values (10, 'Ministère de l Univers', '56 boulevard de l Espace, 91640');
  
-CREATE TABLE performance(
-   performance_id NUMBER,
-   performance_description CLOB,
-   PRIMARY KEY(performance_id)
-);
- 
 CREATE TABLE discount(
    discount_id NUMBER,
    discount_label VARCHAR2(50),
@@ -354,6 +348,7 @@ CREATE TABLE show(
    PRIMARY KEY(show_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
 );
+
 
 INSERT INTO show values ( 1 ,'show 1' ,'description of the show 1' , 553.12 , 415.12 , 2 );
 INSERT INTO show values ( 2 ,'show 2' ,'description of the show 2' , 1186.2 , 454.93 , 3 );
