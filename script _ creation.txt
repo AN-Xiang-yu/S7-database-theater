@@ -337,8 +337,9 @@ INSERT INTO performance_schedule values ( 180 ,TO_DATE('2021-01-29', 'YYYY-MM-DD
 
 CREATE TABLE performance(
    performance_id NUMBER,
-   performance_description CLOB,
    performance_schedule_id NUMBER(10) NOT NULL,
+   performance_datetime TIMESTAMP,
+   performance_description CLOB,
    PRIMARY KEY(performance_id),
    FOREIGN KEYperformance_schedule_id REFERENCES performance_schedule(performance_schedule_id)
 );
@@ -373,7 +374,6 @@ INSERT INTO show values ( 15 ,'show 15' ,'description of the show 15' , 2718.13 
 CREATE TABLE ticket(
    ticket_id NUMBER,
    ticket_price NUMBER(15,2),
-   ticket_performance_datetime TIMESTAMP,
    client_id NUMBER(10) NOT NULL,
    discount_id NUMBER(10),
    PRIMARY KEY(ticket_id),
