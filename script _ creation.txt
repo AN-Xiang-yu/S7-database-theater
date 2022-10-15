@@ -64,7 +64,18 @@ CREATE TABLE client(
    client_type VARCHAR2(50),
    PRIMARY KEY(client_id)
 );
- 
+
+insert into client values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'), 'student');
+insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'student');
+insert into client values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'), '');
+insert into client values (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'), 'unemployed');
+insert into client values (5, 'Emmanuel Macron', TO_DATE('20150807','YYYYMMDD'), '');
+insert into client values (6, 'Paulin Fer', TO_DATE('20081130','YYYYMMDD'), '');
+insert into client values (7, 'Catherine Gontran', TO_DATE('19390520','YYYYMMDD'), '');
+insert into client values (8, 'Camélia Marcel', TO_DATE('20020228','YYYYMMDD'), '');
+insert into client values (9, 'Yves Bernard', TO_DATE('19680107','YYYYMMDD'), '');
+insert into client values (10, 'Alice Marie-Luce', TO_DATE('20120124','YYYYMMDD'), '');
+
 CREATE TABLE theater(
    theater_id NUMBER,
    theater_name VARCHAR2(100),
