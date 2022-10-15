@@ -126,6 +126,17 @@ CREATE TABLE room(
    PRIMARY KEY(room_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
 );
+
+insert into room values (1, 'Salle Alexandre Astier', 200, 1);
+insert into room values (2, 'Salle Jean-Christophe Hembert', 150, 1);
+insert into room values (3, 'Salle Franck Pitiot', 50, 2);
+insert into room values (4, 'Salle Anne Girouard', 200, 4);
+insert into room values (5, 'Salle Audrey Fleurot', 160, 1);
+insert into room values (6, 'Salle Joëlle Sevilla', 80, 2);
+insert into room values (7, 'Salle Caroline Ferrus', 155, 4);
+insert into room values (8, 'Salle Alain Chabat', 130, 3);
+insert into room values (9, 'Salle Bruno Salomone', 145, 3);
+insert into room values (10, 'Salle Vanessa Guedj', 90, 3);
  
 CREATE TABLE performance_schedule(
    performance_schedule_id NUMBER,
