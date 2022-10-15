@@ -41,6 +41,7 @@ CREATE TABLE discount(
    CHECK (discount_percentage BETWEEN 0 AND 1)
 );
 
+insert into discount values (0, 'no discount', 1);
 insert into discount values (1, 'kid', 0.50);
 insert into discount values (2, 'student', 0.25);
 insert into discount values (3, 'senior', 0.30);
