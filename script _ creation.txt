@@ -56,26 +56,25 @@ CREATE TABLE client(
    client_id NUMBER,
    client_name VARCHAR2(50),
    client_birth_date DATE,
-   client_type VARCHAR2(50),
    PRIMARY KEY(client_id)
 );
 
-insert into client values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'), 'student');
-insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'student');
-insert into client values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'), '');
-insert into client values (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'), 'unemployed');
-insert into client values (5, 'Emmanuel Macron', TO_DATE('20150807','YYYYMMDD'), '');
-insert into client values (6, 'Paulin Fer', TO_DATE('20081130','YYYYMMDD'), '');
-insert into client values (7, 'Catherine Gontran', TO_DATE('19390520','YYYYMMDD'), '');
-insert into client values (8, 'Camélia Marcel', TO_DATE('20020228','YYYYMMDD'), '');
-insert into client values (9, 'Yves Bernard', TO_DATE('19680107','YYYYMMDD'), '');
-insert into client values (10, 'Alice Marie-Luce', TO_DATE('20120124','YYYYMMDD'), '');
+insert into client values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'));
+insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'));
+insert into client values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
+insert into client values (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'));
+insert into client values (5, 'Emmanuel Macron', TO_DATE('20150807','YYYYMMDD'));
+insert into client values (6, 'Paulin Fer', TO_DATE('20081130','YYYYMMDD'));
+insert into client values (7, 'Catherine Gontran', TO_DATE('19390520','YYYYMMDD'));
+insert into client values (8, 'Camélia Marcel', TO_DATE('20020228','YYYYMMDD'));
+insert into client values (9, 'Yves Bernard', TO_DATE('19680107','YYYYMMDD'));
+insert into client values (10, 'Alice Marie-Luce', TO_DATE('20120124','YYYYMMDD'));
 
 CREATE TABLE theater(
    theater_id NUMBER,
    theater_name VARCHAR2(100),
    theater_address VARCHAR2(50),
-   city_id NUMBER(10) NOT NULL,
+   city_id NUMBER NOT NULL,
    PRIMARY KEY(theater_id),
    FOREIGN KEY(city_id) REFERENCES city(city_id)
 );
@@ -94,7 +93,7 @@ CREATE TABLE balance(
    balance_id NUMBER,
    balance_date TIMESTAMP NOT NULL,
    balance_amount NUMBER(15,2),
-   theater_id NUMBER(10) NOT NULL,
+   theater_id NUMBER NOT NULL,
    PRIMARY KEY(balance_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
 );
@@ -108,7 +107,7 @@ CREATE TABLE transfer(
    transfer_sender VARCHAR2(50),
    transfer_receiver VARCHAR2(50),
    transfer_balance_at_time NUMBER(15,2),
-   theater_id NUMBER(10) NOT NULL,
+   theater_id NUMBER NOT NULL,
    PRIMARY KEY(transfer_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
    CHECK (transfer_amount >= 0)
@@ -117,8 +116,8 @@ CREATE TABLE transfer(
 CREATE TABLE room(
    room_id NUMBER,
    room_name VARCHAR2(100),
-   room_capacity NUMBER(10),
-   theater_id NUMBER(10) NOT NULL,
+   room_capacity NUMBER,
+   theater_id NUMBER NOT NULL,
    PRIMARY KEY(room_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
    CHECK (room_capacity >= 0)
@@ -141,7 +140,7 @@ CREATE TABLE show(
    show_description CLOB,
    show_fixed_costs NUMBER(15,2),
    show_performing_costs NUMBER(15,2),
-   theater_id NUMBER(10) NOT NULL,
+   theater_id NUMBER NOT NULL,
    PRIMARY KEY(show_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
    CHECK (show_fixed_costs >= 0),
@@ -169,11 +168,11 @@ CREATE TABLE performance_schedule(
    performance_schedule_id NUMBER,
    performance_schedule_start_date DATE,
    performance_schedule_end_date DATE,
-   performance_schedule_times NUMBER(10),
+   performance_schedule_times NUMBER,
    performance_schedule_transport_cost NUMBER(15,2),
-   show_id NUMBER(10) NOT NULL,
-   room_id NUMBER(10) NOT NULL,
-   theater_id NUMBER(10) NOT NULL,
+   show_id NUMBER NOT NULL,
+   room_id NUMBER NOT NULL,
+   theater_id NUMBER NOT NULL,
    PRIMARY KEY(performance_schedule_id),
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(room_id) REFERENCES room(room_id),
@@ -186,11 +185,13 @@ CREATE TABLE performance_schedule(
 
 CREATE TABLE performance(
    performance_id NUMBER,
-   performance_schedule_id NUMBER(10) NOT NULL,
+   performance_schedule_id NUMBER NOT NULL,
    performance_datetime TIMESTAMP,
    performance_description CLOB,
+   performance_reference_price NUMBER, 
    PRIMARY KEY(performance_id),
-   FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id)
+   FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id),
+   CHECK performance_reference_price >= 0)
 );
 
 
@@ -738,19 +739,18 @@ INSERT INTO performance values ( 361 , 180 ,TO_DATE('2021-12-30 20:15:00', 'YYYY
 ​
  
 CREATE TABLE ticket(
-   ticket_id NUMBER,
-   ticket_price NUMBER(15,2),
-   client_id NUMBER(10) NOT NULL,
-   discount_id NUMBER(10),
-   PRIMARY KEY(ticket_id),
+   performance_id NUMBER NOT NULL,
+   client_id NUMBER NOT NULL,
+   discount_id NUMBER NOT NULL,
+   PRIMARY KEY(performance_id, client_id, discount_id),
+   FOREIGN KEY(performance_id) REFERENCES performance(performance_id),
    FOREIGN KEY(client_id) REFERENCES client(client_id),
-   FOREIGN KEY(discount_id) REFERENCES discount(discount_id),
-   CHECK (ticket_price >= 0)
+   FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
 );
  
 CREATE TABLE contract(
-   theater_id NUMBER(10),
-   agency_id NUMBER(10),
+   theater_id NUMBER NOT NULL,
+   agency_id NUMBER NOT NULL,
    contract_amount NUMBER(15,2),
    contract_date_start TIMESTAMP,
    contract_date_end TIMESTAMP,
@@ -762,17 +762,9 @@ CREATE TABLE contract(
    CHECK (contract_amount >= 0)
 );
  
-CREATE TABLE sells(
-   performance_id NUMBER(10),
-   ticket_id NUMBER(10),
-   PRIMARY KEY(performance_id, ticket_id),
-   FOREIGN KEY(performance_id) REFERENCES performance(performance_id),
-   FOREIGN KEY(ticket_id) REFERENCES ticket(ticket_id)
-);
- 
 CREATE TABLE show_discount(
-   show_id NUMBER(10),
-   discount_id NUMBER(10),
+   show_id NUMBER NOT NULL,
+   discount_id NUMBER FOREIGN,
    PRIMARY KEY(show_id, discount_id),
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
