@@ -46,16 +46,16 @@ CREATE TABLE discount(
    PRIMARY KEY(discount_id)
 );
 
-insert into discount values (1, 'kid', 50);
-insert into discount values (2, 'student', 25);
-insert into discount values (3, 'senior', 30);
-insert into discount values (4, 'christmas', 15);
-insert into discount values (5, 'easter', 15);
-insert into discount values (6, 'halloween', 20);
-insert into discount values (7, 'new_year', 10);
-insert into discount values (8, 'valentine', 15);
-insert into discount values (9, 'unemployed', 20);
-insert into discount values (10, 'asian_new_year', 15);
+insert into discount values (1, 'kid', 0.50);
+insert into discount values (2, 'student', 0.25);
+insert into discount values (3, 'senior', 0.30);
+insert into discount values (4, 'christmas', 0.15);
+insert into discount values (5, 'easter', 0.15);
+insert into discount values (6, 'halloween', 0.20);
+insert into discount values (7, 'new_year', 0.10);
+insert into discount values (8, 'valentine', 0.15);
+insert into discount values (9, 'unemployed', 0.20);
+insert into discount values (10, 'asian_new_year', 0.15);
  
 CREATE TABLE client(
    client_id NUMBER,
