@@ -43,15 +43,14 @@ CREATE TABLE discount(
 
 insert into discount values (0, 'no discount', 1);
 insert into discount values (1, 'kid', 0.50);
-insert into discount values (2, 'student', 0.25);
-insert into discount values (3, 'senior', 0.30);
-insert into discount values (4, 'christmas', 0.15);
-insert into discount values (5, 'easter', 0.15);
+insert into discount values (2, 'senior', 0.30);
+insert into discount values (3, 'student', 0.20);
+insert into discount values (4, 'unemployed', 0.20);
+
+insert into discount values (5, 'christmas', 0.15);
 insert into discount values (6, 'halloween', 0.20);
-insert into discount values (7, 'new_year', 0.10);
+insert into discount values (7, 'new year', 0.10);
 insert into discount values (8, 'valentine', 0.15);
-insert into discount values (9, 'unemployed', 0.20);
-insert into discount values (10, 'asian_new_year', 0.15);
  
 CREATE TABLE client(
    client_id NUMBER,
