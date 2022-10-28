@@ -1,0 +1,264 @@
+CREATE TABLE city(
+   city_id NUMBER,
+   city_name VARCHAR2(50),
+   PRIMARY KEY(city_id)
+);
+
+insert into city values (1, 'Juvisy-sur-Orge');
+insert into city values (2, 'Athis-Mons');
+insert into city values (3, 'Villejuif');
+insert into city values (4, 'Alfortville');
+insert into city values (5, 'Vitry-sur-Seine');
+insert into city values (6, 'Paris');
+insert into city values (7, 'Viry-Châtillon');
+insert into city values (8, 'Créteil');
+insert into city values (9, 'Yerres');
+insert into city values (10, 'Orly');
+
+CREATE TABLE agency(
+   agency_id NUMBER,
+   agency_name VARCHAR2(100),
+   agency_address VARCHAR2(100),
+   PRIMARY KEY(agency_id)
+);
+
+insert into agency values (1, 'Ville de Juvisy', '5 rue des Pommes, 91260');
+insert into agency values (2, 'Mécène Jean Dupuit', '9 avenue du Poulain, 75001');
+insert into agency values (3, 'Municipalité de Villejuif', '4 boulevard Truc, 94800');
+insert into agency values (4, 'Ministère de la Culture', '28 chemin du Pain, 75000');
+insert into agency values (5, 'Ville de Paris', '35 rue Barbara Pravi, 75002');
+insert into agency values (6, 'Amicale des amateurs de théâtre', '54 rue des Chats, 91640');
+insert into agency values (7, 'Ville de Créteil', '2 boulevard des Poils, 94000');
+insert into agency values (8, 'Municipalité de Yerres', '65 avenue Chose, 91330');
+insert into agency values (9, 'Mécène Yvonne Lefèvre', '87 rue du Théâtre, 91260');
+insert into agency values (10, 'Ministère de l Univers', '56 boulevard de l Espace, 91640');
+
+CREATE TABLE discount(
+   discount_id NUMBER,
+   discount_label VARCHAR2(50),
+   discount_percentage NUMBER(2,2),
+   PRIMARY KEY(discount_id),
+   CHECK (discount_percentage BETWEEN 0 AND 1)
+);
+
+insert into discount values (0, 'no discount', 1);
+insert into discount values (1, 'kid', 0.50);
+insert into discount values (2, 'senior', 0.30);
+insert into discount values (3, 'student', 0.20);
+insert into discount values (4, 'unemployed', 0.20);
+
+insert into discount values (5, 'christmas', 0.15);
+insert into discount values (6, 'halloween', 0.20);
+insert into discount values (7, 'new year', 0.10);
+insert into discount values (8, 'valentine', 0.15);
+
+CREATE TABLE client(
+   client_id NUMBER,
+   client_name VARCHAR2(50),
+   client_birth_date DATE,
+   PRIMARY KEY(client_id)
+);
+
+-- Trigger to check clients' birth of date
+create or replace trigger trig_client_birth
+before insert on client
+for each row
+declare 
+e_invalid_date exception;
+begin
+    if :new.client_birth_date > SYSDATE 
+        then
+        raise_application_error(-20000, 'Invalid date. client_birth_date entered is before today.');
+    end if;
+end;
+/
+
+insert into client values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'));
+insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'));
+insert into client values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
+insert into client values (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'));
+insert into client values (5, 'Emmanuel Macron', TO_DATE('20150807','YYYYMMDD'));
+insert into client values (6, 'Paulin Fer', TO_DATE('20081130','YYYYMMDD'));
+insert into client values (7, 'Catherine Gontran', TO_DATE('19390520','YYYYMMDD'));
+insert into client values (8, 'Camélia Marcel', TO_DATE('20020228','YYYYMMDD'));
+insert into client values (9, 'Yves Bernard', TO_DATE('19680107','YYYYMMDD'));
+insert into client values (10, 'Alice Marie-Luce', TO_DATE('20120124','YYYYMMDD'));
+insert into client values (11, 'Alice Marie-Luce', TO_DATE('20230124','YYYYMMDD'));
+
+select * from client;
+
+CREATE TABLE theater(
+   theater_id NUMBER,
+   theater_name VARCHAR2(100),
+   theater_address VARCHAR2(50),
+   city_id NUMBER NOT NULL,
+   PRIMARY KEY(theater_id),
+   FOREIGN KEY(city_id) REFERENCES city(city_id)
+);
+
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (1, 'Theater 1', '5 rue Jean-Jaurès', 1);
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (2, 'Theater 2', '10 rue Mélisande', 2);
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (3, 'Theater 3', '15 rue Xiangyu', 3);
+insert into theater (theater_id, theater_name, theater_address, city_id )
+values (4, 'Theater 4', '20 rue Suhgita', 4);
+
+CREATE TABLE balance(
+   balance_id NUMBER,
+   balance_date TIMESTAMP NOT NULL,
+   balance_amount NUMBER(15,2),
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(balance_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+);
+ 
+CREATE TABLE transfer(
+   transfer_id NUMBER,
+   transfer_label VARCHAR2(50),
+   transfer_description CLOB,
+   transfer_amount NUMBER(15,2),
+   transfer_datetime TIMESTAMP,
+   transfer_sender VARCHAR2(50),
+   transfer_receiver VARCHAR2(50),
+   transfer_balance_at_time NUMBER(15,2),
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(transfer_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (transfer_amount >= 0)
+);
+ 
+CREATE TABLE room(
+   room_id NUMBER,
+   room_name VARCHAR2(100),
+   room_capacity NUMBER,
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(room_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (room_capacity >= 0)
+);
+
+insert into room values (1, 'Salle Alexandre Astier', 20, 1);
+insert into room values (2, 'Salle Jean-Christophe Hembert', 50, 1);
+insert into room values (3, 'Salle Franck Pitiot', 50, 2);
+insert into room values (4, 'Salle Anne Girouard', 20, 4);
+insert into room values (5, 'Salle Audrey Fleurot', 40, 1);
+insert into room values (6, 'Salle Joëlle Sevilla', 30, 2);
+insert into room values (7, 'Salle Caroline Ferrus', 45, 4);
+insert into room values (8, 'Salle Alain Chabat', 30, 3);
+insert into room values (9, 'Salle Bruno Salomone', 45, 3);
+insert into room values (10, 'Salle Vanessa Guedj', 50, 3);
+
+CREATE TABLE show(
+   show_id NUMBER,
+   show_name VARCHAR2(50),
+   show_description CLOB,
+   show_fixed_costs NUMBER(15,2),
+   show_performing_costs NUMBER(15,2),
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(show_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (show_fixed_costs >= 0),
+   CHECK (show_performing_costs >= 0)
+);
+
+
+INSERT INTO show values ( 1 ,'show 1' ,'description of the show 1' , 553.12 , 415.12 , 2 );
+INSERT INTO show values ( 2 ,'show 2' ,'description of the show 2' , 1186.2 , 454.93 , 3 );
+INSERT INTO show values ( 3 ,'show 3' ,'description of the show 3' , 689.91 , 424.93 , 1 );
+INSERT INTO show values ( 4 ,'show 4' ,'description of the show 4' , 904.67 , 223.77 , 4 );
+INSERT INTO show values ( 5 ,'show 5' ,'description of the show 5' , 657.22 , 547.86 , 4 );
+INSERT INTO show values ( 6 ,'show 6' ,'description of the show 6' , 2850.57 , 796.53 , 3 );
+INSERT INTO show values ( 7 ,'show 7' ,'description of the show 7' , 1919.25 , 102.51 , 3 );
+INSERT INTO show values ( 8 ,'show 8' ,'description of the show 8' , 677.17 , 356.85 , 1 );
+INSERT INTO show values ( 9 ,'show 9' ,'description of the show 9' , 2044.01 , 5.7 , 1 );
+INSERT INTO show values ( 10 ,'show 10' ,'description of the show 10' , 1064.33 , 535.33 , 3 );
+
+CREATE TABLE performance_schedule(
+   performance_schedule_id NUMBER,
+   performance_schedule_start_date DATE,
+   performance_schedule_end_date DATE,
+   performance_schedule_times NUMBER,
+   performance_schedule_transport_cost NUMBER(15,2),
+   show_id NUMBER NOT NULL,
+   room_id NUMBER NOT NULL,
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(performance_schedule_id),
+   FOREIGN KEY(show_id) REFERENCES show(show_id),
+   FOREIGN KEY(room_id) REFERENCES room(room_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK(performance_schedule_start_date <= performance_schedule_end_date),
+   CHECK (performance_schedule_times >= 0),
+   CHECK (performance_schedule_transport_cost >= 0)
+);
+
+
+CREATE TABLE performance(
+   performance_id NUMBER,
+   performance_schedule_id NUMBER NOT NULL,
+   performance_datetime TIMESTAMP,
+   performance_description CLOB,
+   performance_reference_price NUMBER, 
+   PRIMARY KEY(performance_id),
+   FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id),
+   CHECK (performance_reference_price >= 0)
+);
+
+ 
+CREATE TABLE ticket(
+   performance_id NUMBER NOT NULL,
+   client_id NUMBER NOT NULL,
+   discount_id NUMBER NOT NULL,
+   PRIMARY KEY(performance_id, client_id, discount_id),
+   FOREIGN KEY(performance_id) REFERENCES performance(performance_id),
+   FOREIGN KEY(client_id) REFERENCES client(client_id),
+   FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
+);
+
+
+INSERT INTO performance_schedule values ( 1 ,TO_DATE('2021-04-17', 'YYYY-MM-DD'),TO_DATE('2021-04-19', 'YYYY-MM-DD'), 2 , 33.57 , 1 , 6 , 2 );
+INSERT INTO performance values ( 1 , 1 ,TO_DATE('2021-04-17 21:25:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 12 );
+INSERT INTO ticket values ( 1 , 16 , 0 );
+INSERT INTO ticket values ( 1 , 18 , 0 );
+INSERT INTO ticket values ( 1 , 59 , 0 );
+INSERT INTO performance values ( 2 , 1 ,TO_DATE('2021-04-19 18:16:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 20 );
+INSERT INTO ticket values ( 2 , 2 , 0 );
+INSERT INTO ticket values ( 2 , 60 , 0 );
+INSERT INTO ticket values ( 2 , 42 , 0 );
+INSERT INTO performance_schedule values ( 2 ,TO_DATE('2021-02-05', 'YYYY-MM-DD'),TO_DATE('2021-02-05', 'YYYY-MM-DD'), 1 , 62.77 , 2 , 6 , 2 );
+INSERT INTO performance values ( 3 , 2 ,TO_DATE('2021-02-06 18:24:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 11 );
+INSERT INTO ticket values ( 3 , 47 , 0 );
+INSERT INTO ticket values ( 3 , 10 , 0 );
+INSERT INTO ticket values ( 3 , 27 , 0 );
+INSERT INTO performance_schedule values ( 3 ,TO_DATE('2021-02-20', 'YYYY-MM-DD'),TO_DATE('2021-02-23', 'YYYY-MM-DD'), 2 , 37.71 , 3 , 7 , 4 );
+INSERT INTO performance values ( 4 , 3 ,TO_DATE('2021-02-20 20:04:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 13 );
+INSERT INTO ticket values ( 4 , 15 , 0 );
+INSERT INTO ticket values ( 4 , 35 , 0 );
+INSERT INTO ticket values ( 4 , 36 , 0 );
+INSERT INTO performance values ( 5 , 3 ,TO_DATE('2021-02-22 22:03:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 10 );
+INSERT INTO ticket values ( 5 , 19 , 0 );
+INSERT INTO ticket values ( 5 , 25 , 0 );
+INSERT INTO ticket values ( 5 , 3 , 0 );
+
+CREATE TABLE contract(
+   theater_id NUMBER NOT NULL,
+   agency_id NUMBER NOT NULL,
+   contract_amount NUMBER(15,2),
+   contract_date_start TIMESTAMP,
+   contract_date_end TIMESTAMP,
+   contract_regular VARCHAR2(50),
+   PRIMARY KEY(theater_id, agency_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   FOREIGN KEY(agency_id) REFERENCES agency(agency_id),
+   CHECK (contract_date_start <= contract_date_end),
+   CHECK (contract_amount >= 0)
+);
+ 
+CREATE TABLE show_discount(
+   show_id NUMBER NOT NULL,
+   discount_id NUMBER NOT NULL,
+   PRIMARY KEY(show_id, discount_id),
+   FOREIGN KEY(show_id) REFERENCES show(show_id),
+   FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
+);

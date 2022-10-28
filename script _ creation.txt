@@ -59,6 +59,20 @@ CREATE TABLE client(
    PRIMARY KEY(client_id)
 );
 
+-- Trigger to check clients' birth of date
+create or replace trigger trig_client_birth
+before insert on client
+for each row
+declare 
+e_invalid_date exception;
+begin
+    if :new.client_birth_date > SYSDATE 
+        then
+        raise_application_error(-20000, 'Invalid date. client_birth_date entered is before today.');
+    end if;
+end;
+/
+
 insert into client values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'));
 insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'));
 insert into client values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
