@@ -274,3 +274,20 @@ CREATE TABLE show_discount(
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
 );
+
+drop table show_discount;
+drop table contract;
+drop table ticket;
+drop table performance;
+drop table performance_schedule;
+drop table show;
+drop table room;
+drop table transfer;
+drop table balance;
+drop table theater;
+drop trigger trig_client_birth;
+drop view v_client;
+drop table client;
+drop table discount;
+drop table agency;
+drop table city;
