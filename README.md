@@ -6,12 +6,12 @@ Tâches :
 Contraintes valeurs positives tables
 Trigger date de naissance client inférieure à aujourd'hui
 Vue type de clients (sénior, enfant)
-
-== En cours ==
 Ajouter drops
 
-== A faire ==
+== En cours ==
 Vérifier pas 2 représentations en même temps
+
+== A faire ==
 Afficher villes dans lesquelles se produit une troupe pour une certaine période
 Afficher prix des ticket d'aujourd'hui
 Afficher pour chaque représentation la distribution des tickets par prix
