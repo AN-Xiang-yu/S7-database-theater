@@ -59,6 +59,18 @@ CREATE TABLE client(
    PRIMARY KEY(client_id)
 );
 
+-- View to see client type
+create view v_client as
+   select client_id,
+   client_name,
+   client_birth_date,
+   case
+        when  months_between(TRUNC(sysdate), client_birth_date)/12 <= 12 then 'child' 
+        when  months_between(TRUNC(sysdate), client_birth_date)/12 >= 70 then 'senior' else '' end as client_type
+from client;
+
+select * from v_client;
+
 -- Trigger to check clients' birth of date
 create or replace trigger trig_client_birth
 before insert on client

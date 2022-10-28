@@ -59,6 +59,18 @@ CREATE TABLE client(
    PRIMARY KEY(client_id)
 );
 
+-- View to see client type
+create view v_client as
+   select client_id,
+   client_name,
+   client_birth_date,
+   case
+        when  months_between(TRUNC(sysdate), client_birth_date)/12 <= 12 then 'child' 
+        when  months_between(TRUNC(sysdate), client_birth_date)/12 >= 70 then 'senior' else '' end as client_type
+from client;
+
+select * from v_client;
+
 -- Trigger to check clients' birth of date
 create or replace trigger trig_client_birth
 before insert on client
@@ -73,17 +85,17 @@ begin
 end;
 /
 
-insert into client values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'));
-insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'));
-insert into client values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
-insert into client values (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'));
-insert into client values (5, 'Emmanuel Macron', TO_DATE('20150807','YYYYMMDD'));
-insert into client values (6, 'Paulin Fer', TO_DATE('20081130','YYYYMMDD'));
-insert into client values (7, 'Catherine Gontran', TO_DATE('19390520','YYYYMMDD'));
-insert into client values (8, 'Camélia Marcel', TO_DATE('20020228','YYYYMMDD'));
-insert into client values (9, 'Yves Bernard', TO_DATE('19680107','YYYYMMDD'));
-insert into client values (10, 'Alice Marie-Luce', TO_DATE('20120124','YYYYMMDD'));
-insert into client values (11, 'Alice Marie-Luce', TO_DATE('20230124','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (5, 'Emmanuel Macron', TO_DATE('20150807','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (6, 'Paulin Fer', TO_DATE('20081130','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (7, 'Catherine Gontran', TO_DATE('19390520','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (8, 'Camélia Marcel', TO_DATE('20020228','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (9, 'Yves Bernard', TO_DATE('19680107','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (10, 'Alice Marie-Luce', TO_DATE('20120124','YYYYMMDD'));
+insert into client (client_id, client_name, client_birth_date) values (11, 'Alice Marie-Luce', TO_DATE('20230124','YYYYMMDD'));
 
 select * from client;
 
