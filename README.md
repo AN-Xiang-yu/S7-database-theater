@@ -10,7 +10,7 @@ Tâches :
 • Vérifier pas 2 représentations en même temps
 
 == En cours ==
-• Afficher pour chaque représentation la distribution des tickets par prix
+• Afficher la pièce ayant vendu le plus de tickets
 
 == A faire ==
 • Afficher villes dans lesquelles se produit une troupe pour une certaine période
@@ -21,6 +21,6 @@ Tâches :
 • Afficher les pièces les plus populaires sur une certaine période
 • Afficher la pièce ayant le plus de représentations
 • Afficher la pièce ayant le plus de public potentiel
-• Afficher la pièce ayant vendu le plus de tickets
 • Attribuer remises selon jours avant représentation
+• Afficher pour chaque représentation la distribution des tickets par prix
 • Finir de remplir les tables
