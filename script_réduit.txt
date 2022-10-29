@@ -85,6 +85,8 @@ begin
 end;
 /
 
+
+
 insert into client (client_id, client_name, client_birth_date) values (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'));
 insert into client (client_id, client_name, client_birth_date) values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'));
 insert into client (client_id, client_name, client_birth_date) values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
@@ -252,6 +254,7 @@ INSERT INTO performance values ( 5 , 3 ,TO_DATE('2021-02-22 22:03:00', 'YYYY-MM-
 INSERT INTO ticket values ( 5 , 19 , 0 );
 INSERT INTO ticket values ( 5 , 25 , 0 );
 INSERT INTO ticket values ( 5 , 3 , 0 );
+INSERT INTO performance values ( 6 , 3 ,TO_DATE('2021-02-22 22:03:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 10 );
 
 CREATE TABLE contract(
    theater_id NUMBER NOT NULL,
@@ -275,6 +278,19 @@ CREATE TABLE show_discount(
    FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
 );
 
+-- Check if there is not 2 representations at the same time
+create view performance_overlap as
+select theater.theater_id, performance.performance_datetime, COUNT(performance.performance_datetime) as duplicates
+from theater
+join performance_schedule on theater.theater_id = performance_schedule.theater_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by theater.theater_id, performance_datetime
+having COUNT(performance.performance_datetime) > 1;
+
+select * from performance_overlap;
+
+drop view performance_overlap;
+drop view v_client;
 drop table show_discount;
 drop table contract;
 drop table ticket;
@@ -286,7 +302,6 @@ drop table transfer;
 drop table balance;
 drop table theater;
 drop trigger trig_client_birth;
-drop view v_client;
 drop table client;
 drop table discount;
 drop table agency;

@@ -2094,6 +2094,19 @@ CREATE TABLE show_discount(
    FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
 );
 
+-- Check if there is not 2 representations at the same time
+create view performance_overlap as
+select theater.theater_id, performance.performance_datetime, COUNT(performance.performance_datetime) as duplicates
+from theater
+join performance_schedule on theater.theater_id = performance_schedule.theater_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by theater.theater_id, performance_datetime
+having COUNT(performance.performance_datetime) > 1;
+
+select * from performance_overlap;
+
+drop view performance_overlap;
+drop view v_client;
 drop table show_discount;
 drop table contract;
 drop table ticket;
@@ -2105,7 +2118,6 @@ drop table transfer;
 drop table balance;
 drop table theater;
 drop trigger trig_client_birth;
-drop view v_client;
 drop table client;
 drop table discount;
 drop table agency;
