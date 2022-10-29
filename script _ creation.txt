@@ -121,8 +121,6 @@ INSERT INTO client values ( 59 ,'Kristy Eiche', TO_DATE('1987-01-06', 'YYYY-MM-D
 INSERT INTO client values ( 60 ,'Aaron Throneberry', TO_DATE('2014-05-23', 'YYYY-MM-DD'));
 
 
-​
-
 CREATE TABLE theater(
    theater_id NUMBER,
    theater_name VARCHAR2(100),
@@ -2040,10 +2038,6 @@ INSERT INTO ticket values ( 81 , 22 , 0 );
 INSERT INTO ticket values ( 81 , 4 , 0 );
 INSERT INTO ticket values ( 81 , 46 , 0 );
 INSERT INTO ticket values ( 81 , 23 , 0 );
-
-
-
-
 
 
 CREATE TABLE contract(
