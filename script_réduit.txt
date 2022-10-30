@@ -303,19 +303,21 @@ select * from performance;
 select * from ticket;
 
 -- See the show that sold the most tickets
-select show.show_id, COUNT(ticket.client_id) as tickets_sold
+select show.show_id, show.show_name, COUNT(ticket.client_id) as tickets_sold
 from show 
 join performance_schedule on show.show_id = performance_schedule.show_id
 join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
 join ticket on performance.performance_id = ticket.performance_id
-group by show.show_id
+group by show.show_id, show.show_name
 order by COUNT(ticket.client_id) DESC;
 
--- See the show that sold the most tickets
---select ticket.performance_id, COUNT(ticket.client_id) as tickets_sold
---from ticket
---group by ticket.performance_id
---order by tickets_sold;
+-- See the show for which there is the highest number of representations
+select show.show_id, show.show_name, COUNT(performance.performance_id) as number_of_performances
+from show
+join performance_schedule on show.show_id = performance_schedule.show_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by show.show_id, show.show_name
+order by COUNT(performance.performance_id) DESC;
 
 drop view performance_overlap;
 drop view v_client;
