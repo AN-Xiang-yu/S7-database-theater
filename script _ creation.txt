@@ -2072,12 +2072,13 @@ CREATE TABLE contract(
    contract_amount NUMBER(15,2),
    contract_date_start TIMESTAMP,
    contract_date_end TIMESTAMP,
-   contract_regular VARCHAR2(50),
+   contract_regular NUMBER,
    PRIMARY KEY(theater_id, agency_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
    FOREIGN KEY(agency_id) REFERENCES agency(agency_id),
    CHECK (contract_date_start <= contract_date_end),
-   CHECK (contract_amount >= 0)
+   CHECK (contract_amount >= 0),
+   CHECK (contract_regular > 0)
 );
  
 CREATE TABLE show_discount(
