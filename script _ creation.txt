@@ -83,7 +83,6 @@ from client;
 select * from v_client;
 
 
-
 INSERT INTO client VALUES (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'));
 INSERT INTO client VALUES (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
 INSERT INTO client VALUES (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'));
