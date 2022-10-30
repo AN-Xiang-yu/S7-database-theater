@@ -36,26 +36,29 @@ insert into agency values (10, 'Ministère de l Univers', '56 boulevard de l Esp
 CREATE TABLE discount(
    discount_id NUMBER,
    discount_label VARCHAR2(50),
-   discount_percentage NUMBER(2,2),
+   discount_percentage NUMBER(3,2),
    PRIMARY KEY(discount_id),
    CHECK (discount_percentage BETWEEN 0 AND 1)
 );
 
-insert into discount values (0, 'no discount', 1);
+insert into discount values (0, 'no discount', 0);
 insert into discount values (1, 'kid', 0.50);
 insert into discount values (2, 'senior', 0.30);
 insert into discount values (3, 'student', 0.20);
 insert into discount values (4, 'unemployed', 0.20);
-
 insert into discount values (5, 'christmas', 0.15);
 insert into discount values (6, 'halloween', 0.20);
 insert into discount values (7, 'new year', 0.10);
 insert into discount values (8, 'valentine', 0.15);
+insert into discount values (9, '15 days before', 0.2);
+insert into discount values (10, 'performance day', 0.3);
+insert into discount values (11, 'less than 30% of room is filled', 0.5);
  
 CREATE TABLE client(
    client_id NUMBER,
    client_name VARCHAR2(50),
    client_birth_date DATE,
+   client_identity VARCHAR2(20),
    PRIMARY KEY(client_id)
 );
 
@@ -172,6 +175,7 @@ CREATE TABLE balance(
    balance_id NUMBER,
    balance_date TIMESTAMP NOT NULL,
    balance_amount NUMBER(15,2),
+   balance_statement VARCHAR2(20),
    theater_id NUMBER NOT NULL,
    PRIMARY KEY(balance_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
@@ -217,8 +221,11 @@ CREATE TABLE show(
    show_id NUMBER,
    show_name VARCHAR2(50),
    show_description CLOB,
+   show_duration NUMBER,
    show_fixed_costs NUMBER(15,2),
    show_performing_costs NUMBER(15,2),
+   show_performing_price NUMBER,
+   show_creation_date DATE,
    theater_id NUMBER NOT NULL,
    PRIMARY KEY(show_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
@@ -278,6 +285,7 @@ CREATE TABLE ticket(
    performance_id NUMBER NOT NULL,
    client_id NUMBER NOT NULL,
    discount_id NUMBER NOT NULL,
+   ticket_date_payment DATE NOT NULL,
    PRIMARY KEY(performance_id, client_id, discount_id),
    FOREIGN KEY(performance_id) REFERENCES performance(performance_id),
    FOREIGN KEY(client_id) REFERENCES client(client_id),

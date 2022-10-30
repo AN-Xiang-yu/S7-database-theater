@@ -1,0 +1,170 @@
+CREATE TABLE agency(
+   agency_id NUMBER,
+   agency_name VARCHAR2(100),
+   agency_address VARCHAR2(100),
+   PRIMARY KEY(agency_id)
+);
+
+CREATE TABLE city(
+   city_id NUMBER,
+   city_name VARCHAR2(50),
+   PRIMARY KEY(city_id)
+);
+
+CREATE TABLE theater(
+   theater_id NUMBER,
+   theater_name VARCHAR2(100),
+   theater_address VARCHAR2(50),
+   city_id NUMBER NOT NULL,
+   PRIMARY KEY(theater_id),
+   FOREIGN KEY(city_id) REFERENCES city(city_id)
+);
+
+CREATE TABLE balance(
+   balance_id NUMBER,
+   balance_date TIMESTAMP NOT NULL,
+   balance_amount NUMBER(15,2),
+   balance_statement VARCHAR2(20),
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(balance_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+);
+
+CREATE TABLE transfer(
+   transfer_id NUMBER,
+   transfer_label VARCHAR2(50),
+   transfer_description CLOB,
+   transfer_amount NUMBER(15,2),
+   transfer_datetime TIMESTAMP,
+   transfer_sender VARCHAR2(50),
+   transfer_receiver VARCHAR2(50),
+   transfer_balance_at_time NUMBER(15,2),
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(transfer_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (transfer_amount >= 0)
+);
+
+CREATE TABLE contract(
+   theater_id NUMBER NOT NULL,
+   agency_id NUMBER NOT NULL,
+   contract_amount NUMBER(15,2),
+   contract_date_start TIMESTAMP,
+   contract_date_end TIMESTAMP,
+   contract_regular NUMBER,
+   PRIMARY KEY(theater_id, agency_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   FOREIGN KEY(agency_id) REFERENCES agency(agency_id),
+   CHECK (contract_date_start <= contract_date_end),
+   CHECK (contract_amount >= 0),
+   CHECK (contract_regular > 0)
+);
+
+CREATE TABLE show(
+   show_id NUMBER,
+   show_name VARCHAR2(50),
+   show_description CLOB,
+   show_duration NUMBER,
+   show_fixed_costs NUMBER(15,2),
+   show_performing_costs NUMBER(15,2),
+   show_performing_price NUMBER(15,2),
+   show_creation_date DATE,
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(show_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (show_fixed_costs >= 0),
+   CHECK (show_performing_costs >= 0)
+);
+
+CREATE TABLE room(
+   room_id NUMBER,
+   room_name VARCHAR2(100),
+   room_capacity NUMBER,
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(room_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK (room_capacity >= 0)
+);
+
+CREATE TABLE performance_schedule(
+   performance_schedule_id NUMBER,
+   performance_schedule_start_date DATE,
+   performance_schedule_end_date DATE,
+   performance_schedule_times NUMBER,
+   performance_schedule_transport_cost NUMBER(15,2),
+   performance_schedule_reference_price NUMBER, 
+   show_id NUMBER NOT NULL,
+   room_id NUMBER NOT NULL,
+   theater_id NUMBER NOT NULL,
+   PRIMARY KEY(performance_schedule_id),
+   FOREIGN KEY(show_id) REFERENCES show(show_id),
+   FOREIGN KEY(room_id) REFERENCES room(room_id),
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CHECK(performance_schedule_start_date <= performance_schedule_end_date),
+   CHECK (performance_schedule_times >= 0),
+   CHECK (performance_schedule_transport_cost >= 0),
+   CHECK (performance_schedule_reference_price >= 0)
+);
+
+CREATE TABLE performance(
+   performance_id NUMBER,
+   performance_datetime TIMESTAMP,
+   performance_description CLOB,
+   performance_schedule_id NUMBER NOT NULL,
+   PRIMARY KEY(performance_id),
+   FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id)
+);
+
+CREATE TABLE discount(
+   discount_id NUMBER,
+   discount_label VARCHAR2(50),
+   discount_percentage NUMBER(2,2),
+   PRIMARY KEY(discount_id),
+   CHECK (discount_percentage BETWEEN 0 AND 1)
+);
+
+CREATE TABLE show_discount(
+   show_id NUMBER NOT NULL,
+   discount_id NUMBER NOT NULL,
+   PRIMARY KEY(show_id, discount_id),
+   FOREIGN KEY(show_id) REFERENCES show(show_id),
+   FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
+);
+
+CREATE TABLE client(
+   client_id NUMBER,
+   client_name VARCHAR2(50),
+   client_birth_date DATE,
+   client_identity VARCHAR2(20),
+   PRIMARY KEY(client_id)
+);
+
+CREATE TABLE ticket(
+   performance_id NUMBER NOT NULL,
+   client_id NUMBER NOT NULL,
+   discount_id NUMBER NOT NULL,
+   ticket_date_payment DATE NOT NULL,
+   PRIMARY KEY(performance_id, client_id, discount_id),
+   FOREIGN KEY(performance_id) REFERENCES performance(performance_id),
+   FOREIGN KEY(client_id) REFERENCES client(client_id),
+   FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
+);
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
