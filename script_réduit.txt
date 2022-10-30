@@ -297,11 +297,6 @@ having COUNT(performance.performance_datetime) > 1;
 
 select * from performance_overlap;
 
-select * from show;
-select * from performance_schedule;
-select * from performance;
-select * from ticket;
-
 -- See the show that sold the most tickets
 select show.show_id, show.show_name, COUNT(ticket.client_id) as tickets_sold
 from show 
@@ -324,6 +319,13 @@ SELECT distinct show.theater_id
 FROM show
 LEFT JOIN performance_schedule ON show.theater_id = performance_schedule.theater_id
 WHERE performance_schedule.theater_id IS NULL;
+
+-- Display average ticket price per theater
+select performance_schedule.theater_id, AVG(performance.performance_reference_price) as average_ticket_price
+from performance_schedule
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by performance_schedule.theater_id
+order by AVG(performance.performance_reference_price) DESC;
 
 drop view performance_overlap;
 drop view v_client;
