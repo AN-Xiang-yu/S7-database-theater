@@ -341,6 +341,27 @@ from performance
 where trunc(performance_datetime) = trunc(sysdate)
 order by performance_id;
 
+-- Display companies for which the first performance of a show is always in their theater
+select first_perf.company from
+    (select show.theater_id as company, min(performance_schedule.performance_schedule_start_date), theater.theater_id
+    from show
+    join performance_schedule on performance_schedule.show_id = show.show_id
+    join theater on theater.theater_id = performance_schedule.theater_id
+    group by show.theater_id, show.show_id, theater.theater_id) first_perf
+where first_perf.company = first_perf.theater_id
+group by first_perf.company
+having count(*) = 1;
+
+-- Display companies for which the first performance of a show is never in their theater
+select first_perf.company from
+    (select show.theater_id as company, min(performance_schedule.performance_schedule_start_date), theater.theater_id
+    from show
+    join performance_schedule on performance_schedule.show_id = show.show_id
+    join theater on theater.theater_id = performance_schedule.theater_id
+    group by show.theater_id, show.show_id, theater.theater_id) first_perf
+where first_perf.company != first_perf.theater_id
+group by first_perf.company;
+
 drop view performance_overlap;
 drop view v_client;
 drop table show_discount;
