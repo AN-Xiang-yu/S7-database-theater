@@ -2122,6 +2122,12 @@ join performance on performance_schedule.performance_schedule_id = performance.p
 group by show.show_id, show.show_name
 order by COUNT(performance.performance_id) DESC;
 
+-- See companies that never perform in their own theater
+SELECT distinct show.theater_id
+FROM show
+LEFT JOIN performance_schedule ON show.theater_id = performance_schedule.theater_id
+WHERE performance_schedule.theater_id IS NULL;
+
 drop view performance_overlap;
 drop view v_client;
 drop table show_discount;
