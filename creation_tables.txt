@@ -100,10 +100,11 @@ CREATE TABLE performance_schedule(
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(room_id) REFERENCES room(room_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
-   CHECK(performance_schedule_start_date <= performance_schedule_end_date),
-   CHECK (performance_schedule_times >= 0),
-   CHECK (performance_schedule_transport_cost >= 0),
-   CHECK (performance_schedule_reference_price >= 0)
+   CONSTRAINT ck_date_start_inf_eg_date_end CHECK(performance_schedule_start_date <= performance_schedule_end_date),
+   CONSTRAINT ck_times_nn_neg CHECK (performance_schedule_times >= 0),
+   CONSTRAINT ck_times_inf_eg_nb_date CHECK (performance_schedule_times <= performance_schedule_end_date - performance_schedule_start_date + 1),
+   CONSTRAINT ck_transport_cost_nn_neg CHECK (performance_schedule_transport_cost >= 0),
+   CONSTRAINT ck_reference_price_nn_neg CHECK (performance_schedule_reference_price >= 0)
 );
 
 CREATE TABLE performance(
@@ -133,11 +134,19 @@ CREATE TABLE show_discount(
 
 CREATE TABLE client(
    client_id NUMBER,
-   client_name VARCHAR2(50),
-   client_birth_date DATE,
-   client_identity VARCHAR2(20),
-   PRIMARY KEY(client_id)
+   client_name VARCHAR2(50) NOT NULL,
+   client_birth_date DATE NOT NULL,
+   client_identity VARCHAR2(20) NOT NULL,
+   PRIMARY KEY(client_id),
+   CONSTRAINT ck_indentity_client CHECK (client_identity IN ('kid', 'senior', 'student', 'unemployed', 'other'))
 );
+
+/* Test de contraint
+insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'no identity');
+SELECT * FROM client;
+insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'student');
+SELECT * FROM client;
+*/
 
 CREATE TABLE ticket(
    performance_id NUMBER NOT NULL,
@@ -150,9 +159,87 @@ CREATE TABLE ticket(
    FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
 );
 
+CREATE TABLE time_simulation(
+   time_simulation_today DATE,
+   PRIMARY KEY(time_simulation_today)
+);
 
- 
 
+INSERT INTO city VALUES (1, 'Juvisy-sur-Orge');
+INSERT INTO city VALUES (2, 'Athis-Mons');
+INSERT INTO city VALUES (3, 'Villejuif');
+INSERT INTO city VALUES (4, 'Alfortville');
+INSERT INTO city VALUES (5, 'Vitry-sur-Seine');
+INSERT INTO city VALUES (6, 'Paris');
+INSERT INTO city VALUES (7, 'Viry-Châtillon');
+INSERT INTO city VALUES (8, 'Créteil');
+INSERT INTO city VALUES (9, 'Yerres');
+INSERT INTO city VALUES (10, 'Orly');
+
+INSERT INTO theater (theater_id, theater_name, theater_address, city_id )
+VALUES (1, 'Theater 1', '5 rue Jean-Jaurès', 1);
+INSERT INTO theater (theater_id, theater_name, theater_address, city_id )
+VALUES (2, 'Theater 2', '10 rue Mélisande', 2);
+INSERT INTO theater (theater_id, theater_name, theater_address, city_id )
+VALUES (3, 'Theater 3', '15 rue Xiangyu', 3);
+INSERT INTO theater (theater_id, theater_name, theater_address, city_id )
+VALUES (4, 'Theater 4', '20 rue Suhgita', 4);
+
+INSERT INTO room VALUES (1, 'Salle Alexandre Astier', 20, 1);
+INSERT INTO room VALUES (2, 'Salle Jean-Christophe Hembert', 50, 1);
+INSERT INTO room VALUES (3, 'Salle Franck Pitiot', 50, 2);
+INSERT INTO room VALUES (4, 'Salle Anne Girouard', 20, 4);
+INSERT INTO room VALUES (5, 'Salle Audrey Fleurot', 40, 1);
+INSERT INTO room VALUES (6, 'Salle Joëlle Sevilla', 30, 2);
+INSERT INTO room VALUES (7, 'Salle Caroline Ferrus', 45, 4);
+INSERT INTO room VALUES (8, 'Salle Alain Chabat', 30, 3);
+INSERT INTO room VALUES (9, 'Salle Bruno Salomone', 45, 3);
+INSERT INTO room VALUES (10, 'Salle Vanessa Guedj', 50, 3);
+
+
+INSERT INTO show VALUES ( 1 ,'show 1' ,'description of the show 1' , 120, 553.12 , 415.12 , 1000, TO_DATE('2015-04-17', 'YYYY-MM-DD'), 2 );
+INSERT INTO show VALUES ( 2 ,'show 2' ,'description of the show 2' , 150, 1186.2 , 454.93 , 2000, TO_DATE('2014-05-14', 'YYYY-MM-DD'), 3);
+INSERT INTO show VALUES ( 3 ,'show 3' ,'description of the show 3' , 70, 689.91 , 424.93 , 1500, TO_DATE('2017-06-12', 'YYYY-MM-DD'), 1);
+INSERT INTO show VALUES ( 4 ,'show 4' ,'description of the show 4' , 60, 904.67 , 223.77 , 3000, TO_DATE('2018-04-13', 'YYYY-MM-DD'), 4);
+INSERT INTO show VALUES ( 5 ,'show 5' ,'description of the show 5' , 80, 657.22 , 547.86 , 5000, TO_DATE('2014-02-15', 'YYYY-MM-DD'), 4);
+INSERT INTO show VALUES ( 6 ,'show 6' ,'description of the show 6' , 90, 2850.57 , 796.53 , 1500, TO_DATE('2016-01-19', 'YYYY-MM-DD'), 3);
+INSERT INTO show VALUES ( 7 ,'show 7' ,'description of the show 7' , 115, 1919.25 , 102.51 , 3000, TO_DATE('2015-10-17', 'YYYY-MM-DD'), 3);
+INSERT INTO show VALUES ( 8 ,'show 8' ,'description of the show 8' , 120, 677.17 , 356.85 , 5000, TO_DATE('2017-12-20', 'YYYY-MM-DD'), 1);
+INSERT INTO show VALUES ( 9 ,'show 9' ,'description of the show 9' , 130, 2044.01 , 5.7 , 3000, TO_DATE('2015-05-25', 'YYYY-MM-DD'), 1);
+INSERT INTO show VALUES ( 10 ,'show 10' ,'description of the show 10' , 140, 1064.33 , 535.33 , 2500, TO_DATE('2018-06-29', 'YYYY-MM-DD'), 3);
+INSERT INTO show VALUES ( 11 ,'show 11' ,'description of the show 11' , 150, 2298.26 , 575.24 , 5000, TO_DATE('2019-05-02', 'YYYY-MM-DD'), 1);
+INSERT INTO show VALUES ( 12 ,'show 12' ,'description of the show 12' , 80, 2023.74 , 563.68 , 4000, TO_DATE('2014-09-08', 'YYYY-MM-DD'), 2);
+INSERT INTO show VALUES ( 13 ,'show 13' ,'description of the show 13' , 90, 1623.05 , 422.86 , 1200, TO_DATE('2016-08-03', 'YYYY-MM-DD'), 4);
+INSERT INTO show VALUES ( 14 ,'show 14' ,'description of the show 14' , 70, 1324.96 , 840.27 , 2600, TO_DATE('2019-07-07', 'YYYY-MM-DD'), 3);
+INSERT INTO show VALUES ( 15 ,'show 15' ,'description of the show 15' , 60, 2718.13 , 897.89 , 3200, TO_DATE('2020-04-09', 'YYYY-MM-DD'), 2);
+
+
+INSERT INTO room VALUES (1, 'Salle Alexandre Astier', 20, 1);
+INSERT INTO room VALUES (2, 'Salle Jean-Christophe Hembert', 50, 1);
+INSERT INTO room VALUES (3, 'Salle Franck Pitiot', 50, 2);
+INSERT INTO room VALUES (4, 'Salle Anne Girouard', 20, 4);
+INSERT INTO room VALUES (5, 'Salle Audrey Fleurot', 40, 1);
+INSERT INTO room VALUES (6, 'Salle Joëlle Sevilla', 30, 2);
+INSERT INTO room VALUES (7, 'Salle Caroline Ferrus', 45, 4);
+INSERT INTO room VALUES (8, 'Salle Alain Chabat', 30, 3);
+INSERT INTO room VALUES (9, 'Salle Bruno Salomone', 45, 3);
+INSERT INTO room VALUES (10, 'Salle Vanessa Guedj', 50, 3);
+
+ /*
+DROP TABLE show_discount;
+DROP TABLE contract;
+DROP TABLE ticket;
+DROP TABLE performance;
+DROP TABLE performance_schedule;
+DROP TABLE show;
+DROP TABLE room;
+DROP TABLE transfer;
+DROP TABLE balance;
+DROP TABLE theater;
+DROP TABLE client;
+DROP TABLE discount;
+DROP TABLE agency;
+DROP TABLE city;*/
 
 
 

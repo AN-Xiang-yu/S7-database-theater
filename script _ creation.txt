@@ -36,7 +36,7 @@ insert into agency values (10, 'Ministère de l Univers', '56 boulevard de l Esp
 CREATE TABLE discount(
    discount_id NUMBER,
    discount_label VARCHAR2(50),
-   discount_percentage NUMBER(3,2),
+   discount_percentage NUMBER(2,2),
    PRIMARY KEY(discount_id),
    CHECK (discount_percentage BETWEEN 0 AND 1)
 );
@@ -56,11 +56,19 @@ insert into discount values (11, 'less than 30% of room is filled', 0.5);
  
 CREATE TABLE client(
    client_id NUMBER,
-   client_name VARCHAR2(50),
-   client_birth_date DATE,
-   client_identity VARCHAR2(20),
-   PRIMARY KEY(client_id)
+   client_name VARCHAR2(50) NOT NULL,
+   client_birth_date DATE NOT NULL,
+   client_identity VARCHAR2(20) NOT NULL,
+   PRIMARY KEY(client_id),
+   CONSTRAINT ck_indentity_client CHECK (client_identity IN ('kid', 'senior', 'student', 'unemployed', 'other'))
 );
+
+/* Test de contraint
+insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'no identity');
+SELECT * FROM client;
+insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'student');
+SELECT * FROM client;
+*/
 
 -- View to see client type
 create view v_client as
@@ -93,7 +101,6 @@ insert into client values (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'));
 insert into client values (3, 'Denis Claude', TO_DATE('19551130','YYYYMMDD'));
 insert into client values (4, 'Faustine Cerf', TO_DATE('19650304','YYYYMMDD'));
 insert into client values (5, 'Emmanuel Macron', TO_DATE('20150807','YYYYMMDD'));
-insert into client values (6, 'Paulin Fer', TO_DATE('20081130','YYYYMMDD'));
 insert into client values (7, 'Catherine Gontran', TO_DATE('19390520','YYYYMMDD'));
 insert into client values (8, 'Camélia Marcel', TO_DATE('20020228','YYYYMMDD'));
 insert into client values (9, 'Yves Bernard', TO_DATE('19680107','YYYYMMDD'));
@@ -103,7 +110,6 @@ INSERT INTO client values ( 12 ,'Cynthia Mckinney', TO_DATE('1966-05-27', 'YYYY-
 INSERT INTO client values ( 13 ,'Amanda Brown', TO_DATE('1982-05-13', 'YYYY-MM-DD'));
 INSERT INTO client values ( 14 ,'Lucius Rosenow', TO_DATE('1969-08-22', 'YYYY-MM-DD'));
 INSERT INTO client values ( 15 ,'Ruth Statler', TO_DATE('2014-10-12', 'YYYY-MM-DD'));
-INSERT INTO client values ( 16 ,'Carl Huerta', TO_DATE('1958-01-22', 'YYYY-MM-DD'));
 INSERT INTO client values ( 17 ,'Angie Soper', TO_DATE('1976-05-14', 'YYYY-MM-DD'));
 INSERT INTO client values ( 18 ,'Robert Huff', TO_DATE('1961-01-05', 'YYYY-MM-DD'));
 INSERT INTO client values ( 19 ,'Thomas Samuel', TO_DATE('1984-05-21', 'YYYY-MM-DD'));
@@ -224,7 +230,7 @@ CREATE TABLE show(
    show_duration NUMBER,
    show_fixed_costs NUMBER(15,2),
    show_performing_costs NUMBER(15,2),
-   show_performing_price NUMBER,
+   show_performing_price NUMBER(15,2),
    show_creation_date DATE,
    theater_id NUMBER NOT NULL,
    PRIMARY KEY(show_id),
@@ -256,6 +262,7 @@ CREATE TABLE performance_schedule(
    performance_schedule_end_date DATE,
    performance_schedule_times NUMBER,
    performance_schedule_transport_cost NUMBER(15,2),
+   performance_schedule_reference_price NUMBER, 
    show_id NUMBER NOT NULL,
    room_id NUMBER NOT NULL,
    theater_id NUMBER NOT NULL,
@@ -263,21 +270,21 @@ CREATE TABLE performance_schedule(
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(room_id) REFERENCES room(room_id),
    FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
-   CHECK(performance_schedule_start_date <= performance_schedule_end_date),
-   CHECK (performance_schedule_times >= 0),
-   CHECK (performance_schedule_transport_cost >= 0)
+   CONSTRAINT ck_date_start_inf_eg_date_end CHECK(performance_schedule_start_date <= performance_schedule_end_date),
+   CONSTRAINT ck_times_nn_neg CHECK (performance_schedule_times >= 0),
+   CONSTRAINT ck_times_inf_eg_nb_date CHECK (performance_schedule_times <= performance_schedule_end_date - performance_schedule_start_date + 1),
+   CONSTRAINT ck_transport_cost_nn_neg CHECK (performance_schedule_transport_cost >= 0),
+   CONSTRAINT ck_reference_price_nn_neg CHECK (performance_schedule_reference_price >= 0)
 );
 
 
 CREATE TABLE performance(
    performance_id NUMBER,
-   performance_schedule_id NUMBER NOT NULL,
    performance_datetime TIMESTAMP,
    performance_description CLOB,
-   performance_reference_price NUMBER, 
+   performance_schedule_id NUMBER NOT NULL,
    PRIMARY KEY(performance_id),
-   FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id),
-   CHECK (performance_reference_price >= 0)
+   FOREIGN KEY (performance_schedule_id) REFERENCES performance_schedule(performance_schedule_id)
 );
 
  
@@ -2076,10 +2083,6 @@ INSERT INTO ticket values ( 81 , 46 , 0 );
 INSERT INTO ticket values ( 81 , 23 , 0 );
 
 
-
-
-
-
 CREATE TABLE contract(
    theater_id NUMBER NOT NULL,
    agency_id NUMBER NOT NULL,
@@ -2118,6 +2121,11 @@ CREATE TABLE show_discount(
    PRIMARY KEY(show_id, discount_id),
    FOREIGN KEY(show_id) REFERENCES show(show_id),
    FOREIGN KEY(discount_id) REFERENCES discount(discount_id)
+);
+
+CREATE TABLE time_simulation(
+   time_simulation_today DATE,
+   PRIMARY KEY(time_simulation_today)
 );
 
 -- Check if there is not 2 representations at the same time

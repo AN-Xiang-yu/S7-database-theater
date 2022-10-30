@@ -1,0 +1,22 @@
+CREATE OR REPLACE TRIGGER trig_identity 
+BEFORE UPDATE OR INSERT
+ON client
+FOR EACH ROW
+DECLARE 
+    age NUMBER;
+BEGIN
+    SELECT EXTRACT(YEAR FROM (MAX(time_simulation_today) - :NEW.client_birth_date) YEAR TO MONTH) INTO age
+    FROM time_simulation;
+     DBMS_OUTPUT.PUT_LINE(age);
+    IF age <= 12 THEN
+        :NEW.client_identity := 'kid' ;
+    END IF;
+    IF age >= 60 THEN
+        :NEW.client_identity := 'senior';
+    END IF;
+END;
+
+/*Test
+INSERT INTO client VALUES (16 ,'Carl Huerta', TO_DATE('1958-01-22', 'YYYY-MM-DD'), 'other');
+INSERT INTO client VALUES (6, 'Paulin Fer', TO_DATE('20131130','YYYYMMDD'), 'other');
+*/
