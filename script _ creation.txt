@@ -2143,6 +2143,12 @@ join theater place on performance_schedule.theater_id = place.theater_id
 join city on place.city_id = city.city_id
 order by show.theater_id;
 
+-- Display prices of today's tickets
+select performance.performance_id, performance.performance_reference_price, performance_datetime
+from performance
+where trunc(performance_datetime) = trunc(sysdate)
+order by performance_id;
+
 drop view performance_overlap;
 drop view v_client;
 drop table show_discount;
