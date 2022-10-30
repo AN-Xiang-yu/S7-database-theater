@@ -1,22 +1,58 @@
-CREATE OR REPLACE TRIGGER trig_identity 
+-- trigger to determine whether a client is an elderly person or a child based on the customer's date of birth
+CREATE OR REPLACE TRIGGER trig_client_identity 
 BEFORE UPDATE OR INSERT
 ON client
 FOR EACH ROW
 DECLARE 
     age NUMBER;
 BEGIN
+    -- get the client's age
     SELECT EXTRACT(YEAR FROM (MAX(time_simulation_today) - :NEW.client_birth_date) YEAR TO MONTH) INTO age
     FROM time_simulation;
-     DBMS_OUTPUT.PUT_LINE(age);
+    -- a kid is less than or equal to 12 years old
     IF age <= 12 THEN
         :NEW.client_identity := 'kid' ;
     END IF;
+    -- a senior is more than or equal to 60 years old
     IF age >= 60 THEN
         :NEW.client_identity := 'senior';
     END IF;
 END;
+/
 
 /*Test
 INSERT INTO client VALUES (16 ,'Carl Huerta', TO_DATE('1958-01-22', 'YYYY-MM-DD'), 'other');
+SELECT * FROM client;
 INSERT INTO client VALUES (6, 'Paulin Fer', TO_DATE('20131130','YYYYMMDD'), 'other');
+SELECT * FROM client;
 */
+
+
+-- trigger to check clients' birth of date
+CREATE OR REPLACE TRIGGER trig_client_birth
+BEFORE INSERT OR UPDATE 
+ON client
+FOR EACH ROW
+DECLARE 
+    today time_simulation.time_simulation_today%TYPE;
+    excep_invalid_date EXCEPTION;
+BEIGN
+    -- get the date of today
+    SELECT MAX(time_simulation_today) INTO today
+    FROM time_simulation;
+    -- check if the birth date of the client is more than today
+    IF :NEW.client_birth_date > today THEN
+        RAISE excep_invalid_date;
+    END IF;
+    EXCEPTION
+    WHEN excep_invalid_date THEN
+        raise_application_error(-20001, 'Invalid date. client_birth_date entered should be before today.');
+END;
+/
+/*Test
+INSERT INTO client VALUES (2, 'Xiangyu An', TO_DATE('20271014','YYYYMMDD'), 'student');
+SELECT * FROM client;
+INSERT INTO client VALUES (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'student');
+SELECT * FROM client;
+*/
+
