@@ -2105,6 +2105,15 @@ having COUNT(performance.performance_datetime) > 1;
 
 select * from performance_overlap;
 
+-- See the show that sold the most tickets
+select show.show_id, COUNT(ticket.client_id) as tickets_sold
+from show 
+join performance_schedule on show.show_id = performance_schedule.show_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+join ticket on performance.performance_id = ticket.performance_id
+group by show.show_id
+order by COUNT(ticket.client_id) DESC;
+
 drop view performance_overlap;
 drop view v_client;
 drop table show_discount;
