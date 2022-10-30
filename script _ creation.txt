@@ -2188,6 +2188,24 @@ select first_perf.company from
 where first_perf.company != first_perf.theater_id
 group by first_perf.company;
 
+-- Display the total number of tickets sold for a show
+select show.show_id, count(*) as tickets_sold
+from show
+join performance_schedule on performance_schedule.show_id = show.show_id
+join performance on performance.performance_schedule_id = performance_schedule.performance_schedule_id
+join ticket on ticket.performance_id = performance.performance_id
+group by show.show_id
+order by tickets_sold DESC;
+
+-- Display the total number of different clients going to a show
+select show.show_id, count(distinct ticket.client_id) as number_of_distinct_clients
+from show
+join performance_schedule on performance_schedule.show_id = show.show_id
+join performance on performance.performance_schedule_id = performance_schedule.performance_schedule_id
+join ticket on ticket.performance_id = performance.performance_id
+group by show.show_id
+order by number_of_distinct_clients DESC;
+
 drop view performance_overlap;
 drop view v_client;
 drop table show_discount;
