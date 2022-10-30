@@ -147,6 +147,8 @@ INSERT INTO client values ( 59 ,'Kristy Eiche', TO_DATE('1987-01-06', 'YYYY-MM-D
 INSERT INTO client values ( 60 ,'Aaron Throneberry', TO_DATE('2014-05-23', 'YYYY-MM-DD'));
 
 
+​
+
 CREATE TABLE theater(
    theater_id NUMBER,
    theater_name VARCHAR2(100),
@@ -2066,6 +2068,10 @@ INSERT INTO ticket values ( 81 , 46 , 0 );
 INSERT INTO ticket values ( 81 , 23 , 0 );
 
 
+
+
+
+
 CREATE TABLE contract(
    theater_id NUMBER NOT NULL,
    agency_id NUMBER NOT NULL,
@@ -2099,6 +2105,50 @@ group by theater.theater_id, performance_datetime
 having COUNT(performance.performance_datetime) > 1;
 
 select * from performance_overlap;
+
+-- See the show that sold the most tickets
+select show.show_id, COUNT(ticket.client_id) as tickets_sold
+from show 
+join performance_schedule on show.show_id = performance_schedule.show_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+join ticket on performance.performance_id = ticket.performance_id
+group by show.show_id
+order by COUNT(ticket.client_id) DESC;
+
+-- See the show for which there is the highest number of representations
+select show.show_id, show.show_name, COUNT(performance.performance_id) as number_of_performances
+from show
+join performance_schedule on show.show_id = performance_schedule.show_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by show.show_id, show.show_name
+order by COUNT(performance.performance_id) DESC;
+
+-- See companies that never perform in their own theater
+SELECT distinct show.theater_id
+FROM show
+LEFT JOIN performance_schedule ON show.theater_id = performance_schedule.theater_id
+WHERE performance_schedule.theater_id IS NULL;
+
+-- Display average ticket price per theater
+select performance_schedule.theater_id, AVG(performance.performance_reference_price) as average_ticket_price
+from performance_schedule
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by performance_schedule.theater_id
+order by AVG(performance.performance_reference_price) DESC;
+
+-- Display the set of cities in which a theater perform for a certain time period
+select show.theater_id, city.city_name, performance_schedule_start_date as from_date, performance_schedule_end_date as to_date_
+from show
+join performance_schedule on performance_schedule.show_id = show.show_id
+join theater place on performance_schedule.theater_id = place.theater_id
+join city on place.city_id = city.city_id
+order by show.theater_id;
+
+-- Display prices of today's tickets
+select performance.performance_id, performance.performance_reference_price, performance_datetime
+from performance
+where trunc(performance_datetime) = trunc(sysdate)
+order by performance_id;
 
 drop view performance_overlap;
 drop view v_client;

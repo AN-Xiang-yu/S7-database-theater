@@ -41,7 +41,7 @@ CREATE TABLE discount(
    CHECK (discount_percentage BETWEEN 0 AND 1)
 );
 
-insert into discount values (0, 'no discount', 1);
+insert into discount values (0, 'no discount', 0);
 insert into discount values (1, 'kid', 0.50);
 insert into discount values (2, 'senior', 0.30);
 insert into discount values (3, 'student', 0.20);
@@ -51,6 +51,8 @@ insert into discount values (5, 'christmas', 0.15);
 insert into discount values (6, 'halloween', 0.20);
 insert into discount values (7, 'new year', 0.10);
 insert into discount values (8, 'valentine', 0.15);
+
+select * from discount;
 
 CREATE TABLE client(
    client_id NUMBER,
@@ -233,28 +235,34 @@ CREATE TABLE ticket(
 
 INSERT INTO performance_schedule values ( 1 ,TO_DATE('2021-04-17', 'YYYY-MM-DD'),TO_DATE('2021-04-19', 'YYYY-MM-DD'), 2 , 33.57 , 1 , 6 , 2 );
 INSERT INTO performance values ( 1 , 1 ,TO_DATE('2021-04-17 21:25:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 12 );
-INSERT INTO ticket values ( 1 , 16 , 0 );
-INSERT INTO ticket values ( 1 , 18 , 0 );
-INSERT INTO ticket values ( 1 , 59 , 0 );
+INSERT INTO ticket values ( 1 , 16 , 1 );
+INSERT INTO ticket values ( 1 , 18 , 1 );
+INSERT INTO ticket values ( 1 , 59 , 1);
 INSERT INTO performance values ( 2 , 1 ,TO_DATE('2021-04-19 18:16:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 20 );
-INSERT INTO ticket values ( 2 , 2 , 0 );
-INSERT INTO ticket values ( 2 , 60 , 0 );
-INSERT INTO ticket values ( 2 , 42 , 0 );
+INSERT INTO ticket values ( 2 , 2 , 1 );
+INSERT INTO ticket values ( 2 , 60 , 1 );
+INSERT INTO ticket values ( 2 , 42 , 1 );
 INSERT INTO performance_schedule values ( 2 ,TO_DATE('2021-02-05', 'YYYY-MM-DD'),TO_DATE('2021-02-05', 'YYYY-MM-DD'), 1 , 62.77 , 2 , 6 , 2 );
 INSERT INTO performance values ( 3 , 2 ,TO_DATE('2021-02-06 18:24:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 11 );
-INSERT INTO ticket values ( 3 , 47 , 0 );
-INSERT INTO ticket values ( 3 , 10 , 0 );
-INSERT INTO ticket values ( 3 , 27 , 0 );
+INSERT INTO ticket values ( 3 , 47 , 1 );
+INSERT INTO ticket values ( 3 , 10 , 1 );
+INSERT INTO ticket values ( 3 , 27 , 1 );
 INSERT INTO performance_schedule values ( 3 ,TO_DATE('2021-02-20', 'YYYY-MM-DD'),TO_DATE('2021-02-23', 'YYYY-MM-DD'), 2 , 37.71 , 3 , 7 , 4 );
 INSERT INTO performance values ( 4 , 3 ,TO_DATE('2021-02-20 20:04:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 13 );
-INSERT INTO ticket values ( 4 , 15 , 0 );
-INSERT INTO ticket values ( 4 , 35 , 0 );
-INSERT INTO ticket values ( 4 , 36 , 0 );
+INSERT INTO ticket values ( 4 , 15 , 1 );
+INSERT INTO ticket values ( 4 , 35 , 1 );
+INSERT INTO ticket values ( 4 , 36 , 1);
 INSERT INTO performance values ( 5 , 3 ,TO_DATE('2021-02-22 22:03:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 10 );
-INSERT INTO ticket values ( 5 , 19 , 0 );
-INSERT INTO ticket values ( 5 , 25 , 0 );
-INSERT INTO ticket values ( 5 , 3 , 0 );
+INSERT INTO ticket values ( 5 , 19 , 1 );
+INSERT INTO ticket values ( 5 , 25 , 1 );
+INSERT INTO ticket values ( 5 , 3 , 1 );
 INSERT INTO performance values ( 6 , 3 ,TO_DATE('2021-02-22 22:03:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 10 );
+INSERT INTO ticket values (1, 1, 1);
+INSERT INTO ticket values (1, 2, 1);
+INSERT INTO ticket values (2, 3, 1);
+INSERT INTO ticket values (2, 4, 1);
+INSERT INTO ticket values (2, 5, 1);
+INSERT INTO ticket values (3, 16, 1);
 
 CREATE TABLE contract(
    theater_id NUMBER NOT NULL,
@@ -288,6 +296,50 @@ group by theater.theater_id, performance_datetime
 having COUNT(performance.performance_datetime) > 1;
 
 select * from performance_overlap;
+
+-- See the show that sold the most tickets
+select show.show_id, show.show_name, COUNT(ticket.client_id) as tickets_sold
+from show 
+join performance_schedule on show.show_id = performance_schedule.show_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+join ticket on performance.performance_id = ticket.performance_id
+group by show.show_id, show.show_name
+order by COUNT(ticket.client_id) DESC;
+
+-- See the show for which there is the highest number of representations
+select show.show_id, show.show_name, COUNT(performance.performance_id) as number_of_performances
+from show
+join performance_schedule on show.show_id = performance_schedule.show_id
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by show.show_id, show.show_name
+order by COUNT(performance.performance_id) DESC;
+
+-- See companies that never perform in their own theater
+SELECT distinct show.theater_id
+FROM show
+LEFT JOIN performance_schedule ON show.theater_id = performance_schedule.theater_id
+WHERE performance_schedule.theater_id IS NULL;
+
+-- Display average ticket price per theater
+select performance_schedule.theater_id, AVG(performance.performance_reference_price) as average_ticket_price
+from performance_schedule
+join performance on performance_schedule.performance_schedule_id = performance.performance_schedule_id
+group by performance_schedule.theater_id
+order by AVG(performance.performance_reference_price) DESC;
+
+-- Display the set of cities in which a theater perform for a certain time period
+select show.theater_id, city.city_name, performance_schedule_start_date as from_date, performance_schedule_end_date as to_date_
+from show
+join performance_schedule on performance_schedule.show_id = show.show_id
+join theater place on performance_schedule.theater_id = place.theater_id
+join city on place.city_id = city.city_id
+order by show.theater_id;
+
+-- Display prices of today's tickets
+select performance.performance_id, performance.performance_reference_price, performance_datetime
+from performance
+where trunc(performance_datetime) = trunc(sysdate)
+order by performance_id;
 
 drop view performance_overlap;
 drop view v_client;
