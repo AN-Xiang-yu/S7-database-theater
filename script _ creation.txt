@@ -2135,6 +2135,14 @@ join performance on performance_schedule.performance_schedule_id = performance.p
 group by performance_schedule.theater_id
 order by AVG(performance.performance_reference_price) DESC;
 
+-- Display the set of cities in which a theater perform for a certain time period
+select show.theater_id, city.city_name, performance_schedule_start_date as from_date, performance_schedule_end_date as to_date_
+from show
+join performance_schedule on performance_schedule.show_id = show.show_id
+join theater place on performance_schedule.theater_id = place.theater_id
+join city on place.city_id = city.city_id
+order by show.theater_id;
+
 drop view performance_overlap;
 drop view v_client;
 drop table show_discount;
