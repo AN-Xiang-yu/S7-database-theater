@@ -27,7 +27,8 @@ CREATE TABLE balance(
    balance_statement VARCHAR2(20),
    theater_id NUMBER NOT NULL,
    PRIMARY KEY(balance_id),
-   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CONSTRAINT ck_balance_statement CHECK (balance_statement IN ('Decisive loss', 'Temporary loss', 'Profit'))
 );
 
 CREATE TABLE transfer(
@@ -164,6 +165,7 @@ CREATE TABLE time_simulation(
    PRIMARY KEY(time_simulation_today)
 );
 
+INSERT INTO time_simulation VALUES(TO_DATE('20181014','YYYYMMDD'));
 
 INSERT INTO city VALUES (1, 'Juvisy-sur-Orge');
 INSERT INTO city VALUES (2, 'Athis-Mons');
@@ -213,17 +215,19 @@ INSERT INTO show VALUES ( 13 ,'show 13' ,'description of the show 13' , 90, 1623
 INSERT INTO show VALUES ( 14 ,'show 14' ,'description of the show 14' , 70, 1324.96 , 840.27 , 2600, TO_DATE('2019-07-07', 'YYYY-MM-DD'), 3);
 INSERT INTO show VALUES ( 15 ,'show 15' ,'description of the show 15' , 60, 2718.13 , 897.89 , 3200, TO_DATE('2020-04-09', 'YYYY-MM-DD'), 2);
 
-
-INSERT INTO room VALUES (1, 'Salle Alexandre Astier', 20, 1);
-INSERT INTO room VALUES (2, 'Salle Jean-Christophe Hembert', 50, 1);
-INSERT INTO room VALUES (3, 'Salle Franck Pitiot', 50, 2);
-INSERT INTO room VALUES (4, 'Salle Anne Girouard', 20, 4);
-INSERT INTO room VALUES (5, 'Salle Audrey Fleurot', 40, 1);
-INSERT INTO room VALUES (6, 'Salle Joëlle Sevilla', 30, 2);
-INSERT INTO room VALUES (7, 'Salle Caroline Ferrus', 45, 4);
-INSERT INTO room VALUES (8, 'Salle Alain Chabat', 30, 3);
-INSERT INTO room VALUES (9, 'Salle Bruno Salomone', 45, 3);
-INSERT INTO room VALUES (10, 'Salle Vanessa Guedj', 50, 3);
+INSERT INTO discount VALUES (0, 'other', 0);
+INSERT INTO discount VALUES (1, 'kid', 0.50);
+INSERT INTO discount VALUES (2, 'senior', 0.30);
+INSERT INTO discount VALUES (3, 'student', 0.20);
+INSERT INTO discount VALUES (4, 'unemployed', 0.20);
+INSERT INTO discount VALUES (5, 'christmas', 0.15);
+INSERT INTO discount VALUES (6, 'halloween', 0.20);
+INSERT INTO discount VALUES (7, 'new year', 0.10);
+INSERT INTO discount VALUES (8, 'valentine', 0.15);
+INSERT INTO discount VALUES (9, '15 days before', 0.2);
+INSERT INTO discount VALUES (10, 'performance day', 0.3);
+INSERT INTO discount VALUES (11, 'less than 30% of room is filled', 0.5);
+ 
 
  /*
 DROP TABLE show_discount;

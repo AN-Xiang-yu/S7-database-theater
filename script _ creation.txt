@@ -166,12 +166,22 @@ VALUES (4, 'Theater 4', '20 rue Suhgita', 4);
 CREATE TABLE balance(
    balance_id NUMBER,
    balance_date TIMESTAMP NOT NULL,
-   balance_amount NUMBER(15,2),
+   balance_amount NUMBER(15,2) NOT NULL,
    balance_statement VARCHAR2(20),
    theater_id NUMBER NOT NULL,
    PRIMARY KEY(balance_id),
-   FOREIGN KEY(theater_id) REFERENCES theater(theater_id)
+   FOREIGN KEY(theater_id) REFERENCES theater(theater_id),
+   CONSTRAINT ck_balance_statement CHECK (balance_statement IN ('Decisive loss', 'Temporary loss', 'Profit'))
 );
+
+/*Test
+INSERT INTO balance VALUES (1, TO_DATE('20121014','YYYYMMDD'), 5000, 'OTHER', 1);
+SELECT * FROM balance;
+INSERT INTO balance VALUES (1, TO_DATE('20121014','YYYYMMDD'), 5000, 'Profit', 1);
+SELECT * FROM balance;
+*/
+
+
  
 CREATE TABLE transfer(
    transfer_id NUMBER,

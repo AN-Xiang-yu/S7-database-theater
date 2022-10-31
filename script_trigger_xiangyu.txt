@@ -36,7 +36,7 @@ FOR EACH ROW
 DECLARE 
     today time_simulation.time_simulation_today%TYPE;
     excep_invalid_date EXCEPTION;
-BEIGN
+BEGIN
     -- get the date of today
     SELECT MAX(time_simulation_today) INTO today
     FROM time_simulation;
@@ -46,7 +46,7 @@ BEIGN
     END IF;
     EXCEPTION
     WHEN excep_invalid_date THEN
-        raise_application_error(-20001, 'Invalid date. client_birth_date entered should be before today.');
+        raise_application_error(-20001, 'Invalid date, client_birth_date entered should be before today.');
 END;
 /
 /*Test
@@ -56,3 +56,239 @@ INSERT INTO client VALUES (2, 'Xiangyu An', TO_DATE('19971014','YYYYMMDD'), 'stu
 SELECT * FROM client;
 */
 
+-- trigger to check the balance's date
+CREATE OR REPLACE TRIGGER trig_balance_date
+BEFORE INSERT OR UPDATE 
+ON balance
+FOR EACH ROW
+DECLARE 
+    today time_simulation.time_simulation_today%TYPE;
+    excep_invalid_date EXCEPTION;
+BEGIN
+    -- get the date of today
+    SELECT MAX(time_simulation_today) INTO today
+    FROM time_simulation;
+    -- check if the date of the balance is more than today
+    IF :NEW.balance_date > today THEN
+        RAISE excep_invalid_date;
+    END IF;
+    EXCEPTION
+    WHEN excep_invalid_date THEN
+        raise_application_error(-20001, 'Invalid date balance_date entered should be before today.');
+END;
+/
+/*Test
+INSERT INTO balance VALUES (1, TO_DATE('20271014','YYYYMMDD'), 5000, 'Profit', 1);
+SELECT * FROM balance;
+INSERT INTO balance VALUES (1, TO_DATE('20121014','YYYYMMDD'), 5000, 'Profit', 1);
+SELECT * FROM balance;
+*/
+
+-- trigger to check ticket's purchase date
+CREATE OR REPLACE TRIGGER trig_ticket_date
+BEFORE INSERT OR UPDATE 
+ON ticket
+FOR EACH ROW
+DECLARE 
+    today time_simulation.time_simulation_today%TYPE;
+    day_performance performance.performance_datetime%TYPE;
+    excep_invalid_date EXCEPTION;
+BEGIN
+    -- get the date of today
+    SELECT MAX(time_simulation_today) INTO today
+    FROM time_simulation;
+    -- get the date of performance
+    SELECT performance_datetime INTO day_performance
+    FROM performance
+    WHERE  performance_id = :NEW.performance_id;
+    -- check if the ticket's purchase date
+    IF :NEW.ticket_date_payment > today OR :NEW.ticket_date_payment > day_performance THEN
+        RAISE excep_invalid_date;
+    END IF;
+
+    EXCEPTION
+    WHEN excep_invalid_date THEN
+        raise_application_error(-20001, 'Invalid date ticket_date_payment entered should be before today and the day of the performance.');
+END;
+/
+/*Test
+INSERT INTO client VALUES (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'), 'other');
+INSERT INTO performance_schedule VALUES ( 1 ,TO_DATE('2021-04-17', 'YYYY-MM-DD'),TO_DATE('2021-04-19', 'YYYY-MM-DD'), 2 , 120, 33.57 , 1 , 6 , 2 );
+INSERT INTO performance VALUES ( 1 ,TO_DATE('2021-04-17 21:25:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 1);
+INSERT INTO ticket VALUES(1,1,1,TO_DATE('20271014','YYYYMMDD'));
+SELECT * FROM ticket;
+INSERT INTO ticket VALUES(1,1,1,TO_DATE('20211014','YYYYMMDD'));
+SELECT * FROM ticket;
+INSERT INTO ticket VALUES(1,1,1,TO_DATE('20171014','YYYYMMDD'));
+SELECT * FROM ticket;
+*/
+
+-- function to determine if a date is in holiday and return the id of the discount for the holiday
+CREATE OR REPLACE FUNCTION fn_holiday
+(ticket_date_payment IN DATE)
+RETURN NUMBER IS
+    -- month in date
+    mm NUMBER := extract (MONTH FROM( ticket_date_payment)); 
+    -- day in date
+    dd NUMBER := extract (DAY FROM( ticket_date_payment));
+    discount_id discount.discount_id %TYPE;
+    holiday VARCHAR(20);
+BEGIN 
+    -- determine if the date is holiday
+    CASE
+        WHEN mm = 1 AND dd BETWEEN 1 AND 7 THEN
+            holiday := 'new year';
+        WHEN mm = 2 AND dd = 14 THEN
+           holiday := 'valentine';
+        WHEN (mm = 10 AND dd = 31) OR (mm = 11 AND dd BETWEEN 1 AND 6) THEN
+            holiday := 'halloween';
+        WHEN mm = 12 AND dd BETWEEN 10 and 31 THEN
+            holiday := 'christmas';
+        ELSE
+            holiday := 'other';
+    END CASE;
+    -- get the id of the discount
+    SELECT discount_id INTO discount_id
+        FROM discount
+        WHERE discount_label = holiday;
+    RETURN discount_id;
+END;
+/
+/* Test
+SELECT * FROM discount;
+BEGIN 
+    DBMS_OUTPUT.PUT_LINE(fn_holiday(TO_DATE('2021-01-03', 'YYYY-MM-DD')));
+    DBMS_OUTPUT.PUT_LINE(fn_holiday(TO_DATE('2021-02-14', 'YYYY-MM-DD')));
+    DBMS_OUTPUT.PUT_LINE(fn_holiday(TO_DATE('2021-10-31', 'YYYY-MM-DD')));
+    DBMS_OUTPUT.PUT_LINE(fn_holiday(TO_DATE('2021-11-12', 'YYYY-MM-DD')));
+    DBMS_OUTPUT.PUT_LINE(fn_holiday(TO_DATE('2021-12-17', 'YYYY-MM-DD')));
+    DBMS_OUTPUT.PUT_LINE(fn_holiday(TO_DATE('2021-06-17', 'YYYY-MM-DD')));
+END;
+*/
+
+CREATE OR REPLACE TRIGGER trig_discount
+BEFORE INSERT OR UPDATE 
+ON ticket
+FOR EACH ROW
+DECLARE 
+    discount_id_to_use discount.discount_id%TYPE := :NEW.discount_id;
+    discount_id_to_compare discount.discount_id%TYPE;
+    discount_percentage_to_use discount.discount_percentage%TYPE;
+    discount_percentage_to_compare discount.discount_percentage%TYPE;
+    client_identity client.client_identity%TYPE;
+    performance_datetime performance.performance_datetime%TYPE;
+    number_ticket room.room_capacity%TYPE;
+    capacity room.room_capacity%TYPE;
+    TYPE type_discount_id_list IS VARRAY (5) OF discount.discount_id%TYPE; 
+    -- discount_id_list := type_discount_id_list(NEW.discount_id,0,0,0,0);
+BEGIN
+    -- get the identity of the client
+    SELECT client_identity INTO client_identity
+    FROM client 
+    WHERE client_id = :NEW.client_id;
+    -- get the pourcentage by default
+    SELECT discount_percentage INTO discount_percentage_to_use
+    FROM discount
+    WHERE discount_id = discount_id_to_use;
+    -- determine the client identity and the discount that he could have
+    SELECT discount_id, discount_percentage INTO discount_id_to_compare, discount_percentage_to_compare
+    FROM discount
+    WHERE discount_label = client_identity;
+    -- use client identity discount if we get more offers based on it
+    IF discount_percentage_to_compare > discount_percentage_to_use THEN
+        discount_id_to_use := discount_id_to_compare;
+        discount_percentage_to_use := discount_percentage_to_compare;
+    END IF;
+    
+    -- get the date of the performance
+    SELECT performance_datetime INTO performance_datetime
+    FROM performance
+    WHERE performance_id = :NEW.performance_id;
+    -- get the id of the discount related to the holiday
+    discount_id_to_compare := fn_holiday(performance_datetime);
+    -- get the holiday discount percentage
+    SELECT discount_percentage INTO discount_percentage_to_compare
+    FROM discount
+    WHERE discount_id = discount_id_to_compare;
+    -- use holiday discount if we get more offers based on it
+    IF discount_percentage_to_compare > discount_percentage_to_use THEN
+        discount_id_to_use := discount_id_to_compare;
+        discount_percentage_to_use := discount_percentage_to_compare;
+    END IF;
+
+    
+    -- determine if the purchase was made 15 days ago
+    IF EXTRACT (DAY FROM (performance_datetime - :NEW.ticket_date_payment)) >= 15 THEN
+        SELECT discount_id, discount_percentage INTO discount_id_to_compare, discount_percentage_to_compare
+        FROM discount
+        WHERE discount_label = '15 days before';
+    END IF;
+    DBMS_OUTPUT.PUT_LINE(performance_datetime - :NEW.ticket_date_payment);
+    -- use 15 days before discount if we get more offers based on it
+    IF discount_percentage_to_compare > discount_percentage_to_use THEN
+        discount_id_to_use := discount_id_to_compare;
+        discount_percentage_to_use := discount_percentage_to_compare;
+    END IF;
+
+    -- determine if the purchase was made the same day of the perfomance
+    IF performance_datetime - :NEW.ticket_date_payment = 0 THEN
+        SELECT discount_id, discount_percentage INTO discount_id_to_compare, discount_percentage_to_compare
+        FROM discount
+        WHERE discount_label = 'performance day';
+    END IF;
+    -- use the same day of the perfomance discount if we get more offers based on it
+    IF discount_percentage_to_compare > discount_percentage_to_use THEN
+        discount_id_to_use := discount_id_to_compare;
+        discount_percentage_to_use := discount_percentage_to_compare;
+    END IF;
+    
+    -- get the capacity of the room and the number of the ticket sold
+    SELECT COUNT(*), capacity INTO number_ticket, capacity
+    FROM ticket t
+    INNER JOIN performance p ON t.performance_id = p.performance_id
+    INNER JOIN performance_schedule ps ON p.performance_schedule_id = ps.performance_schedule_id
+    INNER JOIN room r ON r.room_id = ps.room_id
+    WHERE t.performance_id = :NEW.performance_id;
+    -- verify if less than 30% of room is filled
+    IF number_ticket <= capacity*0.3 THEN
+        SELECT discount_id, discount_percentage INTO discount_id_to_compare, discount_percentage_to_compare
+        FROM discount
+        WHERE discount_label = 'less than 30% of room is filled';
+    END IF;
+    -- use less than 30% of room is filled discount if we get more offers based on it
+    IF discount_percentage_to_compare > discount_percentage_to_use THEN
+        discount_id_to_use := discount_id_to_compare;
+        discount_percentage_to_use := discount_percentage_to_compare;
+    END IF;
+    
+    :NEW.discount_id := discount_id_to_use;
+END;
+/
+/*
+
+INSERT INTO client VALUES (1, 'Mélisande Grégoire--Bégranger', TO_DATE('20130112','YYYYMMDD'), 'other');
+INSERT INTO performance_schedule VALUES ( 1 ,TO_DATE('2021-04-17', 'YYYY-MM-DD'),TO_DATE('2021-04-19', 'YYYY-MM-DD'), 2 , 120, 33.57 , 1 , 6 , 2 );
+INSERT INTO performance VALUES ( 1 ,TO_DATE('2021-04-17 21:25:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 1);
+INSERT INTO ticket VALUES(1,1,0,TO_DATE('20151014','YYYYMMDD'));
+SELECT * FROM ticket;
+
+INSERT INTO client VALUES (2, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'), 'other');
+INSERT INTO performance_schedule VALUES ( 2 ,TO_DATE('2021-12-17', 'YYYY-MM-DD'),TO_DATE('2021-12-18', 'YYYY-MM-DD'), 2 , 120, 33.57 , 1 , 6 , 2 );
+INSERT INTO performance VALUES ( 2 ,TO_DATE('2021-12-17 21:25:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 2);
+INSERT INTO ticket VALUES(2,2,0,TO_DATE('20151014','YYYYMMDD'));
+SELECT * FROM ticket;
+
+INSERT INTO client VALUES (3, 'Mélisande Grégoire--Bégranger', TO_DATE('20000112','YYYYMMDD'), 'other');
+INSERT INTO performance_schedule VALUES ( 3 ,TO_DATE('2015-04-17', 'YYYY-MM-DD'),TO_DATE('2015-04-18', 'YYYY-MM-DD'), 2 , 120, 33.57 , 1 , 6 , 2 );
+INSERT INTO performance VALUES ( 3 ,TO_DATE('2015-04-17 21:25:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 3);
+INSERT INTO ticket VALUES(1,3,0,TO_DATE('20150401','YYYYMMDD'));
+SELECT * FROM ticket;
+
+INSERT INTO performance_schedule VALUES ( 5 ,TO_DATE('2015-04-17', 'YYYY-MM-DD'),TO_DATE('2015-04-18', 'YYYY-MM-DD'), 2 , 120, 33.57 , 1 , 6 , 2 );
+INSERT INTO performance VALUES ( 5 ,TO_DATE('2015-04-17 21:25:00', 'YYYY-MM-DD HH24:MI:SS'), 'This is a description of a performance.', 5);
+INSERT INTO ticket VALUES(5,4,0,TO_DATE('20150417','YYYYMMDD'));
+SELECT * FROM ticket;
+
+INSERT INTO ticket VALUES(5,1,0,TO_DATE('20150416','YYYYMMDD'));
+SELECT * FROM ticket;
+*/
